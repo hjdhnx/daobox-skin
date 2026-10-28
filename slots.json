@@ -1,8 +1,12 @@
 {
   "updatedAt": "2026-10-28",
   "engine": 4,
-  "note": "图标名键（不含点号）写 iconNames 里的名字；位置槽位键（含点号）写 slots 里的 slot。值除 M3 名外可用图片 scheme（见 valueSchemes）；加载失败一律回落默认。",
+  "note": "图标名键（不含点号）写 iconNames 里的名字；位置槽位键（含点号）写 slots 里的 slot。值除 M3 名外可用图片 scheme（见 valueSchemes）；加载失败一律回落默认。源码约定（红线 41）：图标只允许 icon('名') 调用与 icon: '名' 数据字段两种形态，本表由两种形态机械派生，出现第三种形态导出即失败。",
   "iconNames": [
+    {
+      "name": "search",
+      "count": 22
+    },
     {
       "name": "chevron_right",
       "count": 14
@@ -12,15 +16,55 @@
       "count": 11
     },
     {
+      "name": "grid_view",
+      "count": 10
+    },
+    {
+      "name": "dns",
+      "count": 10
+    },
+    {
+      "name": "download",
+      "count": 10
+    },
+    {
+      "name": "cloud_off",
+      "count": 9
+    },
+    {
+      "name": "bolt",
+      "count": 9
+    },
+    {
+      "name": "auto_awesome",
+      "count": 8
+    },
+    {
       "name": "refresh",
       "count": 8
     },
     {
-      "name": "search",
+      "name": "check",
       "count": 8
     },
     {
-      "name": "grid_view",
+      "name": "radar",
+      "count": 8
+    },
+    {
+      "name": "extension",
+      "count": 8
+    },
+    {
+      "name": "movie",
+      "count": 7
+    },
+    {
+      "name": "menu_book",
+      "count": 7
+    },
+    {
+      "name": "settings",
       "count": 7
     },
     {
@@ -28,19 +72,43 @@
       "count": 7
     },
     {
+      "name": "music_note",
+      "count": 7
+    },
+    {
+      "name": "repeat",
+      "count": 7
+    },
+    {
+      "name": "error_outline",
+      "count": 7
+    },
+    {
       "name": "delete_outline",
       "count": 7
     },
     {
-      "name": "check",
+      "name": "history",
       "count": 7
+    },
+    {
+      "name": "live_tv",
+      "count": 6
+    },
+    {
+      "name": "play_arrow",
+      "count": 6
     },
     {
       "name": "image",
       "count": 6
     },
     {
-      "name": "bolt",
+      "name": "public",
+      "count": 6
+    },
+    {
+      "name": "search_off",
       "count": 6
     },
     {
@@ -48,15 +116,15 @@
       "count": 6
     },
     {
-      "name": "radar",
+      "name": "tune",
       "count": 6
     },
     {
-      "name": "play_arrow",
+      "name": "content_copy",
       "count": 5
     },
     {
-      "name": "download",
+      "name": "travel_explore",
       "count": 5
     },
     {
@@ -64,15 +132,7 @@
       "count": 5
     },
     {
-      "name": "tune",
-      "count": 5
-    },
-    {
-      "name": "cloud_off",
-      "count": 4
-    },
-    {
-      "name": "settings",
+      "name": "folder_open",
       "count": 4
     },
     {
@@ -80,11 +140,23 @@
       "count": 4
     },
     {
-      "name": "add",
+      "name": "movie_filter",
       "count": 4
     },
     {
-      "name": "content_copy",
+      "name": "folder",
+      "count": 4
+    },
+    {
+      "name": "hourglass_empty",
+      "count": 4
+    },
+    {
+      "name": "bookmark",
+      "count": 4
+    },
+    {
+      "name": "add",
       "count": 4
     },
     {
@@ -96,6 +168,22 @@
       "count": 4
     },
     {
+      "name": "tv",
+      "count": 4
+    },
+    {
+      "name": "workspace_premium",
+      "count": 4
+    },
+    {
+      "name": "info",
+      "count": 4
+    },
+    {
+      "name": "delete_sweep",
+      "count": 4
+    },
+    {
       "name": "edit",
       "count": 4
     },
@@ -104,15 +192,7 @@
       "count": 3
     },
     {
-      "name": "folder_open",
-      "count": 3
-    },
-    {
       "name": "inventory_2",
-      "count": 3
-    },
-    {
-      "name": "movie",
       "count": 3
     },
     {
@@ -120,27 +200,27 @@
       "count": 3
     },
     {
-      "name": "music_note",
+      "name": "subtitles",
       "count": 3
     },
     {
-      "name": "dns",
+      "name": "bug_report",
       "count": 3
     },
     {
-      "name": "auto_awesome",
+      "name": "cleaning_services",
       "count": 3
     },
     {
-      "name": "travel_explore",
+      "name": "tab",
       "count": 3
     },
     {
-      "name": "public",
+      "name": "cast",
       "count": 3
     },
     {
-      "name": "menu_book",
+      "name": "description",
       "count": 3
     },
     {
@@ -148,15 +228,83 @@
       "count": 3
     },
     {
-      "name": "tv",
+      "name": "code",
       "count": 3
+    },
+    {
+      "name": "terminal",
+      "count": 3
+    },
+    {
+      "name": "auto_stories",
+      "count": 3
+    },
+    {
+      "name": "shield",
+      "count": 3
+    },
+    {
+      "name": "newspaper",
+      "count": 3
+    },
+    {
+      "name": "science",
+      "count": 2
+    },
+    {
+      "name": "more_horiz",
+      "count": 2
     },
     {
       "name": "arrow_upward",
       "count": 2
     },
     {
+      "name": "repeat_on",
+      "count": 2
+    },
+    {
+      "name": "repeat_one",
+      "count": 2
+    },
+    {
       "name": "lock_outline",
+      "count": 2
+    },
+    {
+      "name": "photo_size_select_large",
+      "count": 2
+    },
+    {
+      "name": "crop_landscape",
+      "count": 2
+    },
+    {
+      "name": "view_agenda",
+      "count": 2
+    },
+    {
+      "name": "view_stream",
+      "count": 2
+    },
+    {
+      "name": "subject",
+      "count": 2
+    },
+    {
+      "name": "view_column",
+      "count": 2
+    },
+    {
+      "name": "child_care",
+      "count": 2
+    },
+    {
+      "name": "play_circle",
+      "count": 2
+    },
+    {
+      "name": "speed",
       "count": 2
     },
     {
@@ -168,11 +316,7 @@
       "count": 2
     },
     {
-      "name": "bookmark",
-      "count": 2
-    },
-    {
-      "name": "history",
+      "name": "bookmark_border",
       "count": 2
     },
     {
@@ -184,15 +328,11 @@
       "count": 2
     },
     {
-      "name": "tab",
+      "name": "swap_horiz",
       "count": 2
     },
     {
-      "name": "cast",
-      "count": 2
-    },
-    {
-      "name": "repeat",
+      "name": "playlist_remove",
       "count": 2
     },
     {
@@ -200,15 +340,11 @@
       "count": 2
     },
     {
-      "name": "subtitles",
-      "count": 2
-    },
-    {
-      "name": "description",
-      "count": 2
-    },
-    {
       "name": "text_fields",
+      "count": 2
+    },
+    {
+      "name": "chat_bubble_outline",
       "count": 2
     },
     {
@@ -224,7 +360,23 @@
       "count": 2
     },
     {
-      "name": "workspace_premium",
+      "name": "star",
+      "count": 2
+    },
+    {
+      "name": "favorite",
+      "count": 2
+    },
+    {
+      "name": "tag",
+      "count": 2
+    },
+    {
+      "name": "verified_user",
+      "count": 2
+    },
+    {
+      "name": "favorite_border",
       "count": 2
     },
     {
@@ -232,7 +384,15 @@
       "count": 2
     },
     {
-      "name": "extension",
+      "name": "gavel",
+      "count": 2
+    },
+    {
+      "name": "palette",
+      "count": 2
+    },
+    {
+      "name": "apps",
       "count": 2
     },
     {
@@ -240,19 +400,43 @@
       "count": 2
     },
     {
-      "name": "error_outline",
-      "count": 2
+      "name": "home",
+      "count": 1
     },
     {
-      "name": "delete_sweep",
-      "count": 2
+      "name": "person",
+      "count": 1
     },
     {
       "name": "swap_vert",
       "count": 1
     },
     {
-      "name": "movie_filter",
+      "name": "view_list",
+      "count": 1
+    },
+    {
+      "name": "photo_library",
+      "count": 1
+    },
+    {
+      "name": "pause",
+      "count": 1
+    },
+    {
+      "name": "share",
+      "count": 1
+    },
+    {
+      "name": "theaters",
+      "count": 1
+    },
+    {
+      "name": "list_alt",
+      "count": 1
+    },
+    {
+      "name": "wifi_off",
       "count": 1
     },
     {
@@ -264,19 +448,7 @@
       "count": 1
     },
     {
-      "name": "bookmark_border",
-      "count": 1
-    },
-    {
       "name": "cast_connected",
-      "count": 1
-    },
-    {
-      "name": "swap_horiz",
-      "count": 1
-    },
-    {
-      "name": "more_horiz",
       "count": 1
     },
     {
@@ -300,7 +472,7 @@
       "count": 1
     },
     {
-      "name": "search_off",
+      "name": "link_off",
       "count": 1
     },
     {
@@ -312,10 +484,6 @@
       "count": 1
     },
     {
-      "name": "chat_bubble_outline",
-      "count": 1
-    },
-    {
       "name": "playlist_add",
       "count": 1
     },
@@ -324,23 +492,27 @@
       "count": 1
     },
     {
-      "name": "star",
-      "count": 1
-    },
-    {
-      "name": "favorite",
-      "count": 1
-    },
-    {
       "name": "timeline",
       "count": 1
     },
     {
-      "name": "favorite_border",
+      "name": "category",
       "count": 1
     },
     {
-      "name": "info",
+      "name": "language",
+      "count": 1
+    },
+    {
+      "name": "cloud_upload",
+      "count": 1
+    },
+    {
+      "name": "push_pin",
+      "count": 1
+    },
+    {
+      "name": "lock",
       "count": 1
     },
     {
@@ -356,6 +528,10 @@
       "count": 1
     },
     {
+      "name": "queue_music",
+      "count": 1
+    },
+    {
       "name": "account_balance_wallet",
       "count": 1
     },
@@ -364,19 +540,15 @@
       "count": 1
     },
     {
-      "name": "code",
-      "count": 1
-    },
-    {
       "name": "shopping_cart",
       "count": 1
     },
     {
-      "name": "palette",
+      "name": "cloud_sync",
       "count": 1
     },
     {
-      "name": "apps",
+      "name": "phone_iphone",
       "count": 1
     },
     {
@@ -393,10 +565,6 @@
     },
     {
       "name": "save_alt",
-      "count": 1
-    },
-    {
-      "name": "auto_stories",
       "count": 1
     },
     {
@@ -424,7 +592,23 @@
       "count": 1
     },
     {
+      "name": "sports_soccer",
+      "count": 1
+    },
+    {
+      "name": "animation",
+      "count": 1
+    },
+    {
       "name": "network_check",
+      "count": 1
+    },
+    {
+      "name": "storage",
+      "count": 1
+    },
+    {
+      "name": "send",
       "count": 1
     },
     {
@@ -437,10 +621,6 @@
     },
     {
       "name": "playlist_add_check",
-      "count": 1
-    },
-    {
-      "name": "folder",
       "count": 1
     },
     {
@@ -464,15 +644,7 @@
       "count": 1
     },
     {
-      "name": "hourglass_empty",
-      "count": 1
-    },
-    {
       "name": "rule",
-      "count": 1
-    },
-    {
-      "name": "verified_user",
       "count": 1
     },
     {
