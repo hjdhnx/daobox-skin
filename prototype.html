@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DaoBox 皮肤系统 · 可交互原型</title>
+<!--
+  ══════════════════════════════════════════════════════════════════
+  DaoBox 皮肤系统可交互原型（配套 docs/SKIN-SYSTEM-DESIGN.md）
+
+  本页 = 一台可以完整操作的 DaoBox 模拟机 + 引擎快照面板：
+    · 手机内导航：首页 / AI / 实验室 / 我的 → 设置·外观 / 皮肤 / 详情页
+    · L2 调节（外观页）：主题色 / 圆角手感 / 玻璃 / 纯黑 / 动态取色 / 背景
+      —— 全部是 overlay，实时叠加在当前皮肤上（base ⊕ skin ⊕ overlay）
+    · L3 高级：真实导出 skin.json（Blob 下载）、真实导入（JSON 校验 +
+      越权字段拒绝）、一键清除自定义 —— 导出→改→导入全闭环
+    · 右侧快照面板：每个 token 的值与来源层（默认/皮肤/自定义/动态/纯黑）
+
+  实现即原理：SKINS/BASE = token 表；resolve() = 合并器（确定性纯函数，
+  含优先级链 动态取色 > 自定义 > 皮肤 > 默认）；apply() = 快照注入 CSS 变量。
+  D-52 口径：落地禁逐卡 blur（本页 backdrop-filter 仅为浏览器演示）。
+  ══════════════════════════════════════════════════════════════════
+-->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --hall-bg: #0B0E14; --hall-card: #12161F; --hall-line: #1F2532;
+    --hall-text: #E8EBF2; --hall-dim: #8B93A7; --hall-accent: #7CACF8;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--hall-bg); color: var(--hall-text); line-height: 1.55;
+         font-family: system-ui, "Segoe UI", "Microsoft YaHei", sans-serif; padding-bottom: 70px; }
+  .wrap { max-width: 1500px; margin: 0 auto; padding: 0 26px; }
+
+  header.hero { padding: 40px 0 26px; border-bottom: 1px solid var(--hall-line); margin-bottom: 30px; }
+  .hero .badges { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .badge { font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--hall-line);
+           color: var(--hall-dim); background: var(--hall-card); }
+  .badge.hot { color: #FFB4A9; border-color: #4A2C30; }
+  .hero h1 { font-size: 30px; font-weight: 700;
+             background: linear-gradient(100deg, #E8EBF2 30%, #7CACF8 70%, #C79BF2);
+             -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { color: var(--hall-dim); margin-top: 8px; max-width: 980px; font-size: 14px; }
+  .hero p b { color: var(--hall-text); font-weight: 600; }
+  .hero .path { margin-top: 10px; font-size: 13px; color: #7CDFB0; font-family: Consolas, monospace; }
+
+  .layout { display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+
+  /* ═══════════ 手机 ═══════════ */
+  .phone { width: 330px; border-radius: 44px; padding: 10px; background: #05070C;
+           border: 1px solid #232A38; flex-shrink: 0;
+           box-shadow: 0 26px 70px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.04); }
+  .screen { position: relative; border-radius: 35px; overflow: hidden; height: 680px;
+            background: var(--bg); color: var(--c-on-surface); font-family: var(--font-body);
+            display: flex; flex-direction: column; }
+  .screen::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 5;
+                    border-radius: 35px; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.03); }
+
+  .statusbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 22px 2px;
+               font-size: 11px; font-weight: 600; opacity: .85; }
+  .statusbar .icons { display: flex; gap: 5px; align-items: center; }
+  .statusbar .sig { width: 12px; height: 8px; border-bottom: 1.5px solid currentColor; border-left: 1.5px solid currentColor; }
+  .statusbar .batt { width: 18px; height: 9px; border: 1.2px solid currentColor; border-radius: 2.5px; position: relative; }
+  .statusbar .batt::after { content: ""; position: absolute; left: 1.5px; top: 1.5px; bottom: 1.5px; width: 60%;
+                            background: currentColor; border-radius: 1px; }
+
+  .pages { flex: 1; overflow: hidden; position: relative; }
+  .page { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain;
+          padding-bottom: 14px; display: none; animation: pagein .28s ease; }
+  .page.active { display: block; }
+  @keyframes pagein { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;} }
+
+  .pagehead { display: flex; align-items: center; gap: 10px; padding: 12px 18px 6px; }
+  .pagehead .back { width: 32px; height: 32px; border-radius: var(--radius-chip); display: flex;
+                    align-items: center; justify-content: center; cursor: pointer;
+                    background: var(--chip-bg); border: var(--chip-border); color: var(--c-on-surface); }
+  .pagehead h2 { font-size: 17px; font-family: var(--font-display); }
+  .pagehead .spacer { flex: 1; }
+  .appbar { padding: 8px 18px 10px; }
+  .appbar .hello { font-size: 20px; font-weight: 700; font-family: var(--font-display); }
+  .appbar .sub { font-size: 11px; color: var(--c-on-surface-variant); margin-top: 2px; }
+
+  .card { border-radius: var(--radius-card); background: var(--card-bg); border: var(--card-border);
+          box-shadow: var(--card-shadow); }
+  .glasshl::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 1px; border-radius: inherit;
+                     background: linear-gradient(90deg, transparent 5%, rgba(255,255,255,.4) 50%, transparent 95%); }
+  .banner { margin: 10px 18px 0; padding: 15px; position: relative; overflow: hidden;
+            border-radius: var(--radius-card); background: var(--banner-bg, var(--card-bg));
+            border: var(--banner-border, var(--card-border)); box-shadow: var(--banner-shadow, var(--card-shadow)); }
+  .banner .tag { display: inline-block; font-size: 10px; padding: 3px 9px; border-radius: var(--radius-chip);
+                 background: var(--c-primary); color: var(--c-on-primary); font-weight: 600; }
+  .banner h3 { font-size: 16px; font-weight: 700; margin-top: 8px; font-family: var(--font-display); }
+  .banner p { font-size: 10.5px; color: var(--c-on-surface-variant); margin-top: 3px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600;
+         padding: 8px 16px; border-radius: var(--radius-button); border: none; cursor: pointer;
+         background: var(--btn-bg, var(--c-primary)); color: var(--c-on-primary); font-family: var(--font-body); }
+  .btn.ghost { background: transparent; color: var(--c-on-surface); border: 1.5px solid currentColor; opacity: .8; }
+  .banner .btn { margin-top: 10px; }
+
+  .chips { display: flex; gap: 8px; padding: 12px 18px 4px; flex-wrap: wrap; }
+  .chip { font-size: 11.5px; padding: 6px 14px; border-radius: var(--radius-chip);
+          background: var(--chip-bg); color: var(--c-on-surface-variant); border: var(--chip-border);
+          white-space: nowrap; cursor: default; }
+  .chip.on { background: var(--c-primary); color: var(--c-on-primary); border-color: transparent; font-weight: 600; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 8px 18px; }
+  .pcard { border-radius: var(--radius-card); overflow: hidden; position: relative;
+           background: var(--card-bg); border: var(--card-border); box-shadow: var(--card-shadow); cursor: pointer;
+           transition: transform .18s ease; }
+  .pcard:hover { transform: translateY(-2px); }
+  .poster { height: 92px; background: var(--pg); }
+  .poster .rank { position: absolute; top: 8px; left: 8px; font-size: 9px; padding: 2px 7px;
+                  border-radius: var(--radius-chip); background: rgba(0,0,0,.45); color: #fff; }
+  .pcard .t { padding: 8px 10px 10px; }
+  .pcard .t b { font-size: 12px; display: block; }
+  .pcard .t span { font-size: 10px; color: var(--c-on-surface-variant); }
+
+  .navbar { margin: 6px 14px 14px; padding: 7px 6px; display: flex; justify-content: space-around;
+            align-items: center; border-radius: var(--radius-nav); background: var(--nav-bg);
+            border: var(--nav-border); box-shadow: var(--nav-shadow); }
+  .phone[data-nav="floating"] .navbar { margin: 6px 20px 16px; }
+  .ntab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9.5px;
+          color: var(--c-on-surface-variant); width: 58px; padding: 4px 0; cursor: pointer; user-select: none; }
+  .ntab.on { color: var(--navfg, var(--c-primary)); font-weight: 700; }
+  .ntab .ic { width: 26px; height: 22px; display: flex; align-items: center; justify-content: center; }
+
+  /* ── 手机内设置控件（本身也吃 token，跟着换肤） ── */
+  .setgroup { margin: 14px 18px 0; padding: 4px 0; }
+  .settitle { font-size: 12px; font-weight: 700; color: var(--c-on-surface-variant); padding: 6px 6px 8px; }
+  .setrow { display: flex; align-items: center; gap: 10px; padding: 11px 12px; position: relative; }
+  .setrow + .setrow { border-top: 1px solid color-mix(in srgb, var(--c-on-surface-variant) 15%, transparent); }
+  .setrow .lab { flex: 1; min-width: 0; }
+  .setrow .lab b { font-size: 12.5px; display: block; }
+  .setrow .lab span { font-size: 10px; color: var(--c-on-surface-variant); display: block; margin-top: 1px; }
+  .setrow .val { font-size: 11px; color: var(--c-on-surface-variant); display: flex; align-items: center; gap: 6px; }
+  .chev { color: var(--c-on-surface-variant); }
+  .rowcard { border-radius: var(--radius-card); background: var(--card-bg); border: var(--card-border);
+             box-shadow: var(--card-shadow); overflow: hidden; }
+  .badge2 { font-size: 9px; padding: 2px 7px; border-radius: 999px; background: var(--c-primary);
+            color: var(--c-on-primary); font-weight: 600; }
+  .segd { display: flex; border-radius: var(--radius-chip); overflow: hidden; border: var(--chip-border); }
+  .segd button { flex: 1; font-size: 11px; padding: 6px 4px; border: none; cursor: pointer;
+                 background: var(--chip-bg); color: var(--c-on-surface-variant); font-family: var(--font-body); }
+  .segd button.on { background: var(--c-primary); color: var(--c-on-primary); font-weight: 700; }
+  .sw-toggle { position: relative; width: 40px; height: 22px; border-radius: 999px; cursor: pointer;
+               background: var(--chip-bg); border: var(--chip-border); transition: background .25s; flex-shrink: 0; }
+  .sw-toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+                      border-radius: 50%; background: var(--c-on-surface-variant); transition: all .25s; }
+  .sw-toggle.on { background: var(--c-primary); border-color: transparent; }
+  .sw-toggle.on::after { left: 20px; background: var(--c-on-primary); }
+  .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 4px 12px 12px; }
+  .swatch { aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
+            position: relative; transition: transform .15s; }
+  .swatch:hover { transform: scale(1.12); }
+  .swatch.on { border-color: var(--c-on-surface); }
+  .swatch.reset { background: transparent; border: 2px dashed var(--c-on-surface-variant);
+                  display: flex; align-items: center; justify-content: center; font-size: 9px;
+                  color: var(--c-on-surface-variant); }
+  .hintline { font-size: 10px; color: var(--c-on-surface-variant); padding: 0 14px 8px; }
+
+  /* 皮肤页 */
+  .skrow { display: flex; gap: 12px; padding: 12px; align-items: center; cursor: pointer; }
+  .skrow .prev { width: 84px; height: 62px; border-radius: calc(var(--radius-card) * .8); flex-shrink: 0;
+                 position: relative; overflow: hidden; }
+  .skrow .prev .mb { position: absolute; top: 7px; left: 7px; right: 7px; height: 16px; border-radius: 6px; }
+  .skrow .prev .mn { position: absolute; bottom: 6px; left: 10px; right: 10px; height: 10px; border-radius: 999px; }
+  .skrow .info { flex: 1; min-width: 0; }
+  .skrow .info b { font-size: 13px; display: flex; align-items: center; gap: 6px; }
+  .skrow .info span { font-size: 10px; color: var(--c-on-surface-variant); display: block; margin-top: 2px; }
+  .tag2 { font-size: 9px; padding: 2px 7px; border-radius: 999px; font-weight: 600;
+          background: var(--chip-bg); color: var(--c-on-surface-variant); border: var(--chip-border); }
+  .tag2.pro { background: var(--c-primary); color: var(--c-on-primary); border: none; }
+
+  /* AI / 实验室 / 我的 */
+  .bubble { max-width: 78%; padding: 10px 12px; font-size: 12px; border-radius: var(--radius-card); }
+  .bubble.bot { background: var(--card-bg); border: var(--card-border); box-shadow: var(--card-shadow);
+                border-bottom-left-radius: var(--radius-chip); }
+  .bubble.me { background: var(--c-primary); color: var(--c-on-primary); margin-left: auto;
+               border-bottom-right-radius: var(--radius-chip); }
+  .chatcol { display: flex; flex-direction: column; gap: 10px; padding: 12px 18px; }
+  .inputbar { margin: 6px 18px 10px; display: flex; align-items: center; gap: 8px; padding: 0 14px; height: 40px;
+              border-radius: var(--radius-button); background: var(--search-bg); border: var(--search-border);
+              color: var(--c-on-surface-variant); font-size: 12px; }
+  .statgrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; padding: 10px 18px; }
+  .stat { padding: 12px 10px; text-align: center; }
+  .stat b { font-size: 17px; font-family: var(--font-display); display: block; }
+  .stat span { font-size: 9.5px; color: var(--c-on-surface-variant); }
+  .avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--c-primary);
+            color: var(--c-on-primary); display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 17px; }
+  .gridentry { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 13px 4px;
+               cursor: pointer; }
+  .gridentry .gi { width: 38px; height: 38px; border-radius: var(--radius-chip); display: flex;
+                   align-items: center; justify-content: center; background: var(--chip-bg);
+                   border: var(--chip-border); color: var(--c-primary); }
+  .gridentry span { font-size: 10px; color: var(--c-on-surface-variant); }
+
+  /* 详情页 */
+  .hero2 { height: 150px; margin: 0 14px; border-radius: var(--radius-card); background: var(--pg1);
+           position: relative; overflow: hidden; box-shadow: var(--card-shadow); }
+  .hero2 .fade { position: absolute; inset: auto 0 0 0; height: 60%;
+                 background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--bg) 90%, transparent)); }
+  .epgrid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; padding: 8px 18px; }
+  .ep { font-size: 11px; text-align: center; padding: 8px 0; border-radius: var(--radius-chip);
+        background: var(--chip-bg); border: var(--chip-border); color: var(--c-on-surface-variant); cursor: pointer; }
+  .ep.on { background: var(--c-primary); color: var(--c-on-primary); font-weight: 700; }
+
+  /* toast / modal */
+  .toast { position: absolute; left: 50%; bottom: 86px; transform: translateX(-50%) translateY(16px);
+           background: rgba(0,0,0,.82); color: #fff; font-size: 11.5px; padding: 9px 16px; border-radius: 999px;
+           opacity: 0; transition: all .3s; pointer-events: none; z-index: 40; white-space: nowrap; max-width: 90%; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .modal { position: absolute; inset: 0; background: rgba(0,0,0,.55); z-index: 30; display: none;
+           align-items: flex-end; }
+  .modal.show { display: flex; }
+  .sheetbox { width: 100%; max-height: 82%; overflow-y: auto; border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+              background: var(--nav-bg); border-top: var(--nav-border); padding: 16px 16px 20px;
+              animation: sheetup .3s cubic-bezier(.2,.8,.2,1); }
+  @keyframes sheetup { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+  .sheetbox h3 { font-size: 14px; margin-bottom: 4px; }
+  .sheetbox .note { font-size: 10.5px; color: var(--c-on-surface-variant); margin-bottom: 10px; }
+  .sheetbox pre { font-family: Consolas, monospace; font-size: 10px; line-height: 1.55; overflow-x: auto;
+                  background: rgba(0,0,0,.35); border-radius: 10px; padding: 12px; color: #CDE3D2; }
+  .sheetbox .btns { display: flex; gap: 10px; margin-top: 12px; }
+  .sheetbox .btns .btn { flex: 1; justify-content: center; }
+
+  #phone .screen * { transition: border-radius .5s cubic-bezier(.2,.8,.2,1), background-color .5s,
+                     color .5s, box-shadow .5s, border-color .5s; }
+
+  /* ═══════════ 快照面板 ═══════════ */
+  .panel { flex: 1; min-width: 380px; max-width: 560px; display: flex; flex-direction: column; gap: 16px; }
+  .pcard-hall { background: var(--hall-card); border: 1px solid var(--hall-line); border-radius: 18px; padding: 18px 20px; }
+  .panel h3 { font-size: 14.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .panel h3 .dot { width: 8px; height: 8px; border-radius: 50%; background: #7CDFB0; }
+  .qpills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .qpill { display: flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 12px; cursor: pointer;
+           background: #0D1119; border: 1px solid var(--hall-line); color: var(--hall-text); font-size: 12.5px;
+           transition: border-color .2s, transform .15s; }
+  .qpill:hover { transform: translateY(-1px); }
+  .qpill.on { border-color: var(--hall-accent); background: #101725; }
+  .qpill .d { width: 20px; height: 20px; border-radius: 7px; border: 1px solid rgba(255,255,255,.14); }
+  .formula { font-family: Consolas, monospace; font-size: 12.5px; color: #7CACF8; background: #0D1119;
+             border: 1px solid var(--hall-line); border-radius: 10px; padding: 10px 13px; margin-top: 12px;
+             line-height: 1.8; }
+  .tokrow { display: flex; justify-content: space-between; align-items: center; padding: 6px 9px;
+            font-size: 12px; border-radius: 8px; font-family: Consolas, monospace; }
+  .tokrow:nth-child(odd) { background: rgba(255,255,255,.03); }
+  .tokrow .k { color: var(--hall-dim); }
+  .tokrow .v { display: flex; align-items: center; gap: 8px; }
+  .tokrow .sw2 { width: 30px; height: 14px; border-radius: 4px; border: 1px solid rgba(255,255,255,.16); }
+  .src { font-size: 9.5px; padding: 2px 7px; border-radius: 999px; font-family: system-ui; white-space: nowrap; }
+  .src.base { background: #232A38; color: #9AA5BC; }
+  .src.skin { background: #1D3040; color: #7CC4F8; }
+  .src.user { background: #2C2440; color: #C7A6F2; }
+  .src.dyn  { background: #16352A; color: #7CDFB0; }
+  .src.pb   { background: #3A2420; color: #F0B47C; }
+  .logbox { font-family: Consolas, monospace; font-size: 11.5px; color: var(--hall-dim); line-height: 1.9; }
+  .logbox em { color: #7CDFB0; font-style: normal; }
+  .logbox .warn { color: #FF9F8C; }
+
+  /* 对比条 */
+  section.compare { margin-top: 46px; }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  .sec-head .no { font-size: 12px; color: var(--hall-accent); font-weight: 700; letter-spacing: 2px; }
+  .sec-head h2 { font-size: 19px; }
+  .sec-sub { color: var(--hall-dim); font-size: 13px; margin-bottom: 16px; }
+  .minirow { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; }
+  .mini { width: 158px; border-radius: 22px; padding: 7px; background: #05070C; border: 1px solid #232A38; flex-shrink: 0; }
+  .mini .mscr { border-radius: 17px; height: 250px; overflow: hidden; background: var(--bg);
+                position: relative; font-family: var(--font-body); }
+  .mini .mbar { height: 10px; margin: 12px 12px 0; border-radius: 999px; background: var(--c-primary); opacity: .8; }
+  .mini .mcard { height: 54px; margin: 10px 12px 0; border-radius: var(--radius-card);
+                 background: var(--banner-bg, var(--card-bg)); border: var(--banner-border, var(--card-border)); }
+  .mini .mpair { display: flex; gap: 8px; margin: 8px 12px 0; }
+  .mini .mp { flex: 1; height: 44px; border-radius: var(--radius-card); background: var(--card-bg);
+              border: var(--card-border); }
+  .mini .mnav { position: absolute; left: 14px; right: 14px; bottom: 12px; height: 26px;
+                border-radius: var(--radius-nav); background: var(--nav-bg); border: var(--nav-border); }
+  .mini .capm { text-align: center; font-size: 11px; color: var(--hall-dim); padding: 8px 0 2px; }
+  .mini .capm b { color: var(--hall-text); font-size: 12px; display: block; }
+
+  footer { margin-top: 50px; border-top: 1px solid var(--hall-line); padding-top: 20px; }
+  footer p { font-size: 12.5px; color: var(--hall-dim); max-width: 960px; }
+  footer p b { color: var(--hall-text); }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="badges">
+      <span class="badge hot">设计稿 · 可交互原型 v2</span>
+      <span class="badge">docs/SKIN-SYSTEM-DESIGN.md</span>
+      <span class="badge">base ⊕ skin ⊕ overlay 三层合成</span>
+      <span class="badge">导出 / 导入真实可用</span>
+    </div>
+    <h1>DaoBox 皮肤系统 · 完整操作原型</h1>
+    <p>左侧手机可以<b>完整操作</b>：四个 tab 导航、海报进详情页、<b>我的 → 设置 → 外观</b>里做 L2 调节（主题色/圆角手感/玻璃/纯黑/动态取色/背景，全部是 overlay 实时叠加在当前皮肤上）、皮肤页一键换皮（保留你的自定义）、<b>高级</b>里真实导出 skin.json / 导入 / 重置。右侧面板实时显示<b>每个 token 来自哪一层</b>。</p>
+    <p class="path">推荐路径：我的 → 设置 → 外观 → 换皮肤 → 调主题色和圆角 → 开玻璃 → 切暗色 → 开纯黑 → 高级·导出</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+
+    <!-- ═══ 手机 ═══ -->
+    <div class="phone" id="phone">
+      <div class="screen">
+        <div class="statusbar"><span>20:28</span><span class="icons"><span class="sig"></span><span class="batt"></span></span></div>
+        <div class="pages">
+
+          <!-- 首页 -->
+          <div class="page" id="p-home">
+            <div class="appbar"><div class="hello">晚上好</div><div class="sub">今天想看点什么 · 20:28</div></div>
+            <div class="banner">
+              <span class="tag">今日推荐</span>
+              <h3>都市夜归人 · 第 2 季</h3>
+              <p>豆瓣 9.2 · 更新至 08 集 · 4K 杜比</p>
+              <span class="btn"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>继续观看</span>
+            </div>
+            <div class="chips"><span class="chip on">推荐</span><span class="chip">电影</span><span class="chip">剧集</span><span class="chip">动漫</span></div>
+            <div class="grid2" id="homeGrid"></div>
+          </div>
+
+          <!-- AI -->
+          <div class="page" id="p-ai">
+            <div class="pagehead"><h2>AI 助手</h2></div>
+            <div class="chatcol">
+              <div class="bubble bot">晚上好。可以根据你本周的观看记录，推荐三部冷门佳作，要吗？</div>
+              <div class="bubble me">要，偏向悬疑。</div>
+              <div class="bubble bot">好：①《深海回声》科幻悬疑；②《雾中列车》日式本格；③《第七个房间》心理惊悚。已按你的口味排好。</div>
+            </div>
+            <div class="inputbar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+              问点什么…
+            </div>
+          </div>
+
+          <!-- 实验室 -->
+          <div class="page" id="p-lab">
+            <div class="pagehead"><h2>实验室</h2></div>
+            <div class="setgroup rowcard">
+              <div class="setrow"><div class="lab"><b>本周实验统计</b><span>页面构建 · 快照命中 · 引擎耗时</span></div></div>
+            </div>
+            <div class="statgrid">
+              <div class="stat card"><b>67</b><span>页面</span></div>
+              <div class="stat card"><b>4.2ms</b><span>平均 build</span></div>
+              <div class="stat card"><b>98%</b><span>快照命中</span></div>
+            </div>
+            <div class="setgroup rowcard">
+              <div class="setrow"><div class="lab"><b>弹幕引擎</b><span>实验性渲染管线</span></div><span class="chev">›</span></div>
+              <div class="setrow"><div class="lab"><b>嗅探规则编辑</b><span>12 条自定义规则</span></div><span class="chev">›</span></div>
+              <div class="setrow"><div class="lab"><b>沙盒终端</b><span>pro 层功能</span></div><span class="badge2">PRO</span></div>
+            </div>
+          </div>
+
+          <!-- 我的 -->
+          <div class="page" id="p-profile">
+            <div class="setgroup rowcard" style="padding:14px 14px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="avatar">T</div>
+                <div style="flex:1"><b style="font-size:14px">Taois</b><div style="font-size:10.5px;color:var(--c-on-surface-variant)">Pro 已激活 · 设备码 ABCD-EF12</div></div>
+              </div>
+            </div>
+            <div class="statgrid" style="grid-template-columns:repeat(4,1fr)">
+              <div class="gridentry card" data-nav2="skins"><div class="gi"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 100 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1-.23-.27-.38-.62-.38-1 0-.83.67-1.5 1.5-1.5H16a5 5 0 005-5c0-4.42-4.03-8-9-8z"/></svg></div><span>皮肤</span></div>
+              <div class="gridentry card"><div class="gi"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div><span>Pro 授权</span></div>
+              <div class="gridentry card"><div class="gi"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 11H19V7a2 2 0 00-2-2h-4V3.5a2.5 2.5 0 00-5 0V5H4a2 2 0 00-2 2v3.8h1.5a2.7 2.7 0 010 5.4H2V20a2 2 0 002 2h3.8v-1.5a2.7 2.7 0 015.4 0V22H17a2 2 0 002-2v-4h1.5a2.5 2.5 0 000-5z"/></svg></div><span>插件中心</span></div>
+              <div class="gridentry card"><div class="gi"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13v5.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 015 18.5V13H3v5.5A3.5 3.5 0 006.5 22h11a3.5 3.5 0 003.5-3.5V13h-2zM11 4.83L8.41 7.41 7 6l5-5 5 5-1.41 1.41L13 4.83V16h-2V4.83z"/></svg></div><span>备份</span></div>
+            </div>
+            <div class="setgroup rowcard">
+              <div class="setrow" data-nav2="appearance" style="cursor:pointer"><div class="lab"><b>设置</b><span>外观 · 播放 · 数据</span></div><span class="chev">›</span></div>
+              <div class="setrow" style="cursor:pointer"><div class="lab"><b>关于</b><span>版本 · 开源声明</span></div><span class="chev">›</span></div>
+            </div>
+          </div>
+
+          <!-- 设置·外观（L2 主场） -->
+          <div class="page" id="p-appearance">
+            <div class="pagehead">
+              <span class="back" data-back>‹</span><h2>外观</h2><span class="spacer"></span>
+              <span class="badge2" id="dirtyBadge" style="display:none">已自定义</span>
+            </div>
+
+            <div class="setgroup rowcard">
+              <div class="setrow" data-nav2="skins" style="cursor:pointer">
+                <div class="lab"><b>皮肤</b><span id="curSkinName">M3 基线</span></div>
+                <span class="val" id="curSkinPreview"></span><span class="chev">›</span>
+              </div>
+            </div>
+
+            <div class="setgroup">
+              <div class="settitle">主题模式（环境开关 · 与皮肤正交）</div>
+              <div class="rowcard"><div class="setrow" style="padding:8px 12px">
+                <div class="segd" id="segMode" style="flex:1">
+                  <button data-mode="light">亮色</button><button data-mode="dark">暗色</button>
+                </div>
+              </div></div>
+            </div>
+
+            <div class="setgroup">
+              <div class="settitle">主题色（overlay · color.seed）</div>
+              <div class="rowcard">
+                <div class="swatches" id="swatches"></div>
+                <div class="hintline" id="colorHint">点击即叠加到当前皮肤之上；选中皮肤默认色以外的颜色会标记「已自定义」</div>
+              </div>
+            </div>
+
+            <div class="setgroup">
+              <div class="settitle">圆角手感（overlay · shape 缩放）</div>
+              <div class="rowcard"><div class="setrow" style="padding:8px 12px">
+                <div class="segd" id="segRadius" style="flex:1">
+                  <button data-rad="0.55">锐利</button><button data-rad="1">标准</button><button data-rad="1.35">圆润</button>
+                </div>
+              </div></div>
+            </div>
+
+            <div class="setgroup">
+              <div class="settitle">图标风格（overlay · icons 轨）</div>
+              <div class="rowcard"><div class="setrow" style="padding:8px 12px">
+                <div class="segd" id="segIcon" style="flex:1">
+                  <button data-ico="">跟随皮肤</button><button data-ico="outline">线性</button><button data-ico="round">圆润</button><button data-ico="fill">填充</button>
+                </div>
+              </div></div>
+              <div class="hintline">产品形态：皮肤包可换任意图标槽位（M3 全库名称 / asset: 内置图 / 包内自绘图，tint 染色自动适配明暗）· 此处演示底栏图标</div>
+            </div>
+
+            <div class="setgroup rowcard">
+              <div class="setrow"><div class="lab"><b>玻璃质感</b><span>半透明卡片 + 背景整层模糊（D-52 口径）</span></div><span class="sw-toggle" id="swGlass"></span></div>
+              <div class="setrow"><div class="lab"><b>纯黑（OLED）</b><span id="pbHint">仅暗色域生效 · 压制皮肤深色面</span></div><span class="sw-toggle" id="swPureBlack"></span></div>
+              <div class="setrow"><div class="lab"><b>动态取色（Material You）</b><span>开启时压制一切主题色（含皮肤与自定义）</span></div><span class="sw-toggle" id="swDynamic"></span></div>
+            </div>
+
+            <div class="setgroup">
+              <div class="settitle">背景（overlay · surface.background）</div>
+              <div class="rowcard"><div class="chips" id="bgChips" style="padding:10px 14px">
+                <span class="chip on" data-bg="skin">跟随皮肤</span>
+                <span class="chip" data-bg="cyan">青雾渐变</span>
+                <span class="chip" data-bg="violet">紫暮渐变</span>
+                <span class="chip" data-bg="warm">暖阳渐变</span>
+              </div></div>
+            </div>
+
+            <div class="setgroup">
+              <div class="settitle">高级（L3 · 极客）</div>
+              <div class="rowcard">
+                <div class="setrow" data-act="export" style="cursor:pointer"><div class="lab"><b>导出当前效果为皮肤包</b><span>快照 + 自定义合并 → skin.json（真实下载）</span></div><span class="chev">›</span></div>
+                <div class="setrow" data-act="import" style="cursor:pointer"><div class="lab"><b>导入皮肤包</b><span>选 .json（schema 校验 + 越权字段拒绝）</span></div><span class="chev">›</span></div>
+                <div class="setrow" data-act="reset" style="cursor:pointer"><div class="lab"><b>重置全部自定义</b><span>清除 overlay · 保留皮肤选择</span></div><span class="chev">›</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 皮肤页（L1） -->
+          <div class="page" id="p-skins">
+            <div class="pagehead"><span class="back" data-back>‹</span><h2>皮肤</h2></div>
+            <div class="hintline" style="padding-top:6px">应用皮肤保留你的自定义调整（叠加制）；出现「已自定义」时可在高级里一键清除</div>
+            <div class="setgroup rowcard" style="margin-top:4px">
+              <div class="setrow" data-nav2="market" style="cursor:pointer">
+                <div class="lab"><b>皮肤市场</b><span>官方市场 + 三方市场 · 在线浏览与安装</span></div>
+                <span class="chev">›</span>
+              </div>
+            </div>
+            <div class="setgroup" id="skinList"></div>
+          </div>
+
+          <!-- 皮肤市场（分发：官方 + 三方，协议对齐插件市场） -->
+          <div class="page" id="p-market">
+            <div class="pagehead"><span class="back" data-back>‹</span><h2>皮肤市场</h2></div>
+            <div class="rowcard" style="margin:4px 18px 0"><div class="setrow" style="padding:8px 12px">
+              <div class="segd" id="segMkt" style="flex:1">
+                <button data-mkt="official">官方市场</button><button data-mkt="third">三方市场</button>
+              </div>
+            </div></div>
+            <div id="mktThird" style="display:none">
+              <div class="setgroup">
+                <div class="settitle">添加市场（market.json 直链）</div>
+                <div class="rowcard"><div class="setrow" style="gap:8px">
+                  <input id="mktUrl" placeholder="https://example.github.io/skins/market.json"
+                    style="flex:1;min-width:0;font-size:11px;padding:8px 10px;border-radius:var(--radius-chip);background:var(--search-bg);border:var(--search-border);color:var(--c-on-surface);outline:none;font-family:var(--font-body)">
+                  <span class="btn" id="mktAdd" style="padding:8px 12px">添加</span>
+                </div></div>
+                <div class="hintline">三方市场不经官方分发；皮肤安装仍过同一道校验闸门（schema / 限额 / 对比度 / 越权字段），无 Pro 语义</div>
+              </div>
+            </div>
+            <div class="setgroup" id="mktList" style="margin-top:10px"></div>
+          </div>
+
+          <!-- 详情页 -->
+          <div class="page" id="p-detail">
+            <div class="pagehead"><span class="back" data-back>‹</span><h2>都市夜归人 · 第 2 季</h2></div>
+            <div class="hero2"><div class="fade"></div></div>
+            <div class="chips" style="padding-top:14px"><span class="chip">豆瓣 9.2</span><span class="chip">2026 · 悬疑</span><span class="chip">4K 杜比</span></div>
+            <div class="chips"><span class="btn"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>在线播放</span><span class="btn ghost">收藏</span><span class="btn ghost">缓存</span></div>
+            <div class="settitle" style="padding:8px 22px 2px">选集 · 更新至 08 集</div>
+            <div class="epgrid" id="epGrid"></div>
+          </div>
+
+        </div>
+
+        <!-- 底栏（图标由 iconStyle 动态渲染：fill/outline/round —— 图标轨演示） -->
+        <div class="navbar" id="navbar"></div>
+
+        <div class="toast" id="toast"></div>
+        <div class="modal" id="modal"><div class="sheetbox" id="sheetbox"></div></div>
+        <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
+      </div>
+    </div>
+
+    <!-- ═══ 快照面板 ═══ -->
+    <aside class="panel">
+      <div class="pcard-hall">
+        <h3><span class="dot"></span>快捷换肤（与手机内皮肤页同源）</h3>
+        <div class="qpills" id="qpills"></div>
+        <div class="formula" id="formula"></div>
+      </div>
+      <div class="pcard-hall">
+        <h3><span class="dot"></span>当前生效快照 · token 来源</h3>
+        <div id="tokenRows"></div>
+      </div>
+      <div class="pcard-hall">
+        <h3><span class="dot"></span>引擎日志</h3>
+        <div class="logbox" id="logbox"></div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- 对比条 -->
+  <section class="compare">
+    <div class="sec-head"><span class="no">◈</span><h2>官方皮肤速览 · 同骨不同皮</h2></div>
+    <p class="sec-sub">同一份 DOM 模板、不同 token 表——皮肤能改变多少 = 参数化覆盖多广。霓虹机甲演示 comp.banner 组件槽位（全局扁平卡 + 横幅独立霓虹）。</p>
+    <div class="minirow" id="minirow"></div>
+  </section>
+
+  <footer>
+    <p><b>原型 ↔ 产品映射</b>：SKINS/BASE 常量 = skin.json token 表；resolve() = lib/skin_repository.dart 的确定性合并器（优先级：动态取色 > 自定义 overlay > 皮肤 > 默认，纯黑压制深色面）；apply() = 快照注入（颜色轨 Dart 落色 / 形态轨 ctx.skin → tokens.js）；导出/导入 = L3 文件出入口。环境开关（明暗/密度/字号/动态取色）与皮肤正交，不进皮肤包。D-52：落地禁逐卡 blur，玻璃 = 半透明 + 描边 + 棱线 + 背景整层模糊；本页 backdrop-filter 仅为浏览器演示效果。</p>
+  </footer>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   引擎实现 = 设计文档的活演示
+   BASE = 引擎默认 token（明暗两域）；SKINS = 皮肤覆盖表；
+   state.overlay = L2 用户覆盖；resolve() = base ⊕ skin ⊕ overlay 合并器
+   ══════════════════════════════════════════════════════════════════ */
+const SYSF = 'system-ui,"Segoe UI","Microsoft YaHei",sans-serif';
+const SERIF = 'Georgia,"Songti SC","SimSun",serif';
+const ROUND = 'YouYuan,"Yuanti SC","Segoe UI",system-ui,sans-serif';
+
+const BASE = {
+  light: { vars: {
+    '--bg':'linear-gradient(180deg,#F8F9FF 0%,#EFF1F8 100%)',
+    '--c-primary':'#0B57D0','--c-on-primary':'#FFFFFF',
+    '--c-on-surface':'#1A1C1E','--c-on-surface-variant':'#44474E',
+    '--font-display':SYSF,'--font-body':SYSF,
+    '--radius-card':'14px','--radius-chip':'8px','--radius-sheet':'16px',
+    '--radius-button':'10px','--radius-nav':'0px',
+    '--card-bg':'#FFFFFF','--card-border':'none','--card-shadow':'0 1px 4px rgba(26,28,30,.06)',
+    '--search-bg':'#E9EBF3','--search-border':'none',
+    '--chip-bg':'#E9EBF3','--chip-border':'none',
+    '--nav-bg':'#F3F4FA','--nav-border':'none','--nav-shadow':'0 -1px 0 rgba(26,28,30,.05)',
+    '--pg1':'linear-gradient(135deg,#5B7FC7,#2E4A8F)','--pg2':'linear-gradient(135deg,#C77B5B,#8F3E2E)',
+    '--pg3':'linear-gradient(135deg,#5BC78F,#2E8F5B)','--pg4':'linear-gradient(135deg,#9B7FC7,#5B2E8F)',
+  }},
+  dark: { vars: {
+    '--bg':'linear-gradient(180deg,#131419 0%,#0E0F13 100%)',
+    '--c-primary':'#A8C7FA','--c-on-primary':'#062E6F',
+    '--c-on-surface':'#E3E2E9','--c-on-surface-variant':'#A9ABB5',
+    '--font-display':SYSF,'--font-body':SYSF,
+    '--radius-card':'14px','--radius-chip':'8px','--radius-sheet':'16px',
+    '--radius-button':'10px','--radius-nav':'0px',
+    '--card-bg':'#1D1F26','--card-border':'none','--card-shadow':'0 1px 4px rgba(0,0,0,.4)',
+    '--search-bg':'#262932','--search-border':'none',
+    '--chip-bg':'#262932','--chip-border':'none',
+    '--nav-bg':'#17181D','--nav-border':'none','--nav-shadow':'0 -1px 0 rgba(255,255,255,.05)',
+    '--pg1':'linear-gradient(135deg,#3A5488,#1F2F52)','--pg2':'linear-gradient(135deg,#8F5343,#54251B)',
+    '--pg3':'linear-gradient(135deg,#3B8F68,#1B4534)','--pg4':'linear-gradient(135deg,#6B548F,#372252)',
+  }},
+};
+
+const SKINS = {
+  baseline: { label:'M3 基线', sub:'现状 · 官方默认', price:'免费 · 内置', light:{}, dark:{},
+    attrs:{ nav:'attached', material:'fill', button:'rounded' }, iconStyle:'fill',
+    dot:'linear-gradient(135deg,#5B8DEF,#0B57D0)' },
+
+  aurora: { label:'极光玻璃', sub:'玻璃材质 · 悬浮底栏', price:'Pro · 推荐', iconStyle:'outline',
+    attrs:{ nav:'floating', material:'glass', button:'pill' }, dot:'linear-gradient(135deg,#4FD8C4,#6B8AF8 55%,#B48AF8)',
+    light:{ vars:{
+      '--bg':'linear-gradient(160deg,#F2F6FF 0%,#E7EDFB 55%,#E9EEF6 100%), radial-gradient(90% 50% at 15% 5%, rgba(79,216,196,.16), transparent 60%), radial-gradient(80% 40% at 90% 15%, rgba(180,138,248,.12), transparent 62%)',
+      '--c-primary':'#3B6FD4','--c-on-primary':'#FFFFFF',
+      '--c-on-surface':'#1B2233','--c-on-surface-variant':'#525E78',
+      '--card-bg':'rgba(255,255,255,.62)','--card-border':'1px solid rgba(19,36,80,.10)',
+      '--card-shadow':'0 8px 26px rgba(30,50,110,.10), inset 0 1px 0 rgba(255,255,255,.7)',
+      '--search-bg':'rgba(255,255,255,.55)','--search-border':'1px solid rgba(19,36,80,.10)',
+      '--chip-bg':'rgba(255,255,255,.55)','--chip-border':'1px solid rgba(19,36,80,.10)',
+      '--nav-bg':'rgba(255,255,255,.72)','--nav-border':'1px solid rgba(19,36,80,.10)',
+      '--nav-shadow':'0 12px 30px rgba(30,50,110,.12), inset 0 1px 0 rgba(255,255,255,.7)',
+      '--radius-card':'20px','--radius-chip':'12px','--radius-sheet':'28px','--radius-button':'999px',
+    }},
+    dark:{ vars:{
+      '--bg':'linear-gradient(160deg,#0A0F1E 0%,#0D1430 45%,#101B3C 100%), radial-gradient(90% 55% at 18% 6%, rgba(79,216,196,.20), transparent 60%), radial-gradient(80% 45% at 88% 18%, rgba(180,138,248,.16), transparent 62%)',
+      '--c-primary':'#8AB4F8','--c-on-primary':'#062E6F',
+      '--c-on-surface':'#E5E9F6','--c-on-surface-variant':'#A9B2CC',
+      '--card-bg':'rgba(20,28,52,.55)','--card-border':'1px solid rgba(255,255,255,.13)',
+      '--card-shadow':'0 10px 30px rgba(3,7,18,.45), inset 0 1px 0 rgba(255,255,255,.06)',
+      '--search-bg':'rgba(12,18,38,.55)','--search-border':'1px solid rgba(255,255,255,.12)',
+      '--chip-bg':'rgba(12,18,38,.55)','--chip-border':'1px solid rgba(255,255,255,.10)',
+      '--nav-bg':'rgba(18,26,50,.68)','--nav-border':'1px solid rgba(255,255,255,.13)',
+      '--nav-shadow':'0 12px 32px rgba(3,7,18,.55), inset 0 1px 0 rgba(255,255,255,.07)',
+      '--radius-card':'20px','--radius-chip':'12px','--radius-sheet':'28px','--radius-button':'999px',
+    }}},
+
+  ink: { label:'墨石直角', sub:'纸墨编辑风 · 锐利', price:'免费 · 内置', iconStyle:'outline',
+    attrs:{ nav:'attached', material:'outline', button:'square' }, navDark:true,
+    dot:'linear-gradient(135deg,#F5F3EF 45%,#17181A 55%)',
+    light:{ vars:{
+      '--bg':'linear-gradient(180deg,#F6F4EF 0%,#EFEBE2 100%)',
+      '--c-primary':'#17181A','--c-on-primary':'#F5F3EF',
+      '--c-on-surface':'#17181A','--c-on-surface-variant':'#5C5A54',
+      '--font-display':SERIF,
+      '--radius-card':'0px','--radius-chip':'0px','--radius-sheet':'0px','--radius-button':'0px',
+      '--card-bg':'#FFFDF8','--card-border':'1px solid #1A1A1A','--card-shadow':'4px 4px 0 rgba(26,26,26,.9)',
+      '--search-bg':'#FFFDF8','--search-border':'1px solid #1A1A1A',
+      '--chip-bg':'transparent','--chip-border':'1px solid #1A1A1A',
+      '--nav-bg':'#17181A','--nav-border':'none','--nav-shadow':'none',
+      '--pg1':'linear-gradient(135deg,#8A8578,#3E3B34)','--pg2':'linear-gradient(135deg,#B45B4A,#5E241C)',
+      '--pg3':'linear-gradient(135deg,#6E7F62,#2C3526)','--pg4':'linear-gradient(135deg,#4A5A78,#1C2436)',
+    }},
+    dark:{ vars:{
+      '--bg':'linear-gradient(180deg,#151412 0%,#100F0D 100%)',
+      '--c-primary':'#E8E4DF','--c-on-primary':'#17181A',
+      '--c-on-surface':'#EDE9DF','--c-on-surface-variant':'#98948A',
+      '--font-display':SERIF,
+      '--radius-card':'0px','--radius-chip':'0px','--radius-sheet':'0px','--radius-button':'0px',
+      '--card-bg':'#1B1915','--card-border':'1px solid rgba(232,228,218,.30)','--card-shadow':'4px 4px 0 rgba(0,0,0,.6)',
+      '--search-bg':'#1B1915','--search-border':'1px solid rgba(232,228,218,.30)',
+      '--chip-bg':'transparent','--chip-border':'1px solid rgba(232,228,218,.35)',
+      '--nav-bg':'#E8E4DF','--nav-border':'none','--nav-shadow':'none',
+    }}},
+
+  jelly: { label:'奶油果冻', sub:'大圆角渐变卡 · M3 Expressive', price:'Pro · 新上架', iconStyle:'round',
+    attrs:{ nav:'floating', material:'gradient', button:'pill' }, dot:'linear-gradient(135deg,#FFD9E8,#FFB9A8)',
+    light:{ vars:{
+      '--bg':'linear-gradient(180deg,#FFF7EE 0%,#FDEFE9 100%), radial-gradient(60% 30% at 85% 8%, rgba(255,185,200,.35), transparent 70%), radial-gradient(50% 25% at 8% 30%, rgba(205,185,255,.25), transparent 70%)',
+      '--c-primary':'#E0568C','--c-on-primary':'#FFFFFF',
+      '--c-on-surface':'#4A2B38','--c-on-surface-variant':'#9A7382',
+      '--font-display':ROUND,'--font-body':ROUND,
+      '--radius-card':'28px','--radius-chip':'16px','--radius-sheet':'32px','--radius-button':'999px','--radius-nav':'26px',
+      '--card-bg':'linear-gradient(135deg,rgba(255,220,232,.92),rgba(255,199,186,.92))',
+      '--card-border':'1px solid rgba(255,255,255,.8)','--card-shadow':'0 8px 24px rgba(224,86,140,.12)',
+      '--search-bg':'rgba(255,255,255,.75)','--search-border':'1px solid rgba(224,86,140,.22)',
+      '--chip-bg':'rgba(255,255,255,.8)','--chip-border':'1px solid rgba(224,86,140,.28)',
+      '--nav-bg':'rgba(255,255,255,.82)','--nav-border':'1px solid rgba(224,86,140,.16)',
+      '--nav-shadow':'0 10px 28px rgba(224,86,140,.16)',
+      '--pg1':'linear-gradient(135deg,#F5A8C0,#D9789B)','--pg2':'linear-gradient(135deg,#F5C094,#DE9263)',
+      '--pg3':'linear-gradient(135deg,#C0A8F5,#9078DE)','--pg4':'linear-gradient(135deg,#9BD8C8,#63B0A0)',
+    }},
+    dark:{ vars:{
+      '--bg':'linear-gradient(180deg,#2A1E26 0%,#201820 100%), radial-gradient(60% 30% at 85% 6%, rgba(255,150,180,.14), transparent 70%)',
+      '--c-primary':'#FF8FB4','--c-on-primary':'#3D1220',
+      '--c-on-surface':'#F6E3EC','--c-on-surface-variant':'#C7A3B4',
+      '--font-display':ROUND,'--font-body':ROUND,
+      '--radius-card':'28px','--radius-chip':'16px','--radius-sheet':'32px','--radius-button':'999px','--radius-nav':'26px',
+      '--card-bg':'linear-gradient(135deg,rgba(255,170,200,.16),rgba(255,150,170,.13))',
+      '--card-border':'1px solid rgba(255,255,255,.12)','--card-shadow':'0 8px 24px rgba(0,0,0,.35)',
+      '--search-bg':'rgba(46,32,42,.6)','--search-border':'1px solid rgba(255,170,200,.18)',
+      '--chip-bg':'rgba(46,32,42,.6)','--chip-border':'1px solid rgba(255,170,200,.18)',
+      '--nav-bg':'rgba(32,24,30,.82)','--nav-border':'1px solid rgba(255,170,200,.14)',
+      '--nav-shadow':'0 10px 28px rgba(0,0,0,.4)',
+    }}},
+
+  neon: { label:'霓虹机甲', sub:'组件槽位演示 · 横幅独立霓虹', price:'Pro · 槽位演示', iconStyle:'fill',
+    attrs:{ nav:'attached', material:'fill', button:'rounded' }, dot:'linear-gradient(135deg,#07080D 40%,#22D3EE)',
+    light:{ vars:{
+      '--bg':'linear-gradient(180deg,#F2F7F9 0%,#E9F1F5 100%), radial-gradient(70% 35% at 80% 4%, rgba(34,211,238,.14), transparent 65%)',
+      '--c-primary':'#0891B2','--c-on-primary':'#FFFFFF',
+      '--c-on-surface':'#12242B','--c-on-surface-variant':'#5A7280',
+      '--radius-card':'16px','--radius-chip':'10px','--radius-sheet':'24px','--radius-button':'8px',
+      '--card-bg':'#FFFFFF','--card-border':'1px solid rgba(34,211,238,.22)','--card-shadow':'0 2px 10px rgba(8,145,178,.08)',
+      '--banner-bg':'linear-gradient(120deg, rgba(34,211,238,.16), rgba(217,70,239,.14))',
+      '--banner-border':'1px solid rgba(34,211,238,.45)',
+      '--banner-shadow':'0 0 26px rgba(34,211,238,.18), inset 0 1px 0 rgba(255,255,255,.6)',
+      '--search-bg':'rgba(255,255,255,.8)','--search-border':'1px solid rgba(34,211,238,.28)',
+      '--chip-bg':'transparent','--chip-border':'1px solid rgba(34,211,238,.30)',
+      '--nav-bg':'rgba(255,255,255,.9)','--nav-border':'1px solid rgba(34,211,238,.30)',
+      '--nav-shadow':'0 -8px 24px rgba(34,211,238,.08)',
+    }},
+    dark:{ vars:{
+      '--bg':'linear-gradient(180deg,#07080D 0%,#0A0D16 100%), radial-gradient(70% 35% at 80% 4%, rgba(34,211,238,.08), transparent 65%), radial-gradient(60% 30% at 10% 22%, rgba(217,70,239,.06), transparent 68%)',
+      '--c-primary':'#22D3EE','--c-on-primary':'#03242B',
+      '--c-on-surface':'#E6F1F6','--c-on-surface-variant':'#8CA3B8',
+      '--radius-card':'16px','--radius-chip':'10px','--radius-sheet':'24px','--radius-button':'8px',
+      '--card-bg':'#10131C','--card-border':'1px solid rgba(140,163,184,.14)','--card-shadow':'0 2px 10px rgba(0,0,0,.35)',
+      '--banner-bg':'linear-gradient(120deg, rgba(34,211,238,.16), rgba(217,70,239,.18))',
+      '--banner-border':'1px solid rgba(34,211,238,.45)',
+      '--banner-shadow':'0 0 26px rgba(34,211,238,.20), inset 0 1px 0 rgba(255,255,255,.10)',
+      '--search-bg':'rgba(16,19,28,.8)','--search-border':'1px solid rgba(140,163,184,.22)',
+      '--chip-bg':'transparent','--chip-border':'1px solid rgba(140,163,184,.35)',
+      '--nav-bg':'rgba(10,13,20,.92)','--nav-border':'1px solid rgba(34,211,238,.30)',
+      '--nav-shadow':'0 -8px 26px rgba(34,211,238,.10)',
+      '--pg1':'linear-gradient(135deg,#155E6B,#0B2B33)','--pg2':'linear-gradient(135deg,#5E1655,#2B0B2B)',
+      '--pg3':'linear-gradient(135deg,#155E78,#0B2333)','--pg4':'linear-gradient(135deg,#4A4A8F,#1C1C3D)',
+    }}},
+};
+
+/* 背景预设（overlay 用） */
+const BGS = {
+  cyan:  'linear-gradient(165deg,#0E2A2F 0%,#123A40 60%,#145050 100%)',
+  violet:'linear-gradient(165deg,#241A44 0%,#33265C 60%,#443068 100%)',
+  warm:  'linear-gradient(165deg,#4A3421 0%,#6B4A28 60%,#8A5C30 100%)',
+};
+
+/* 动态取色（模拟壁纸取色） */
+const DYN_COLOR = '#5E8C6A';
+const GLASS_PATCH = {
+  light: { '--card-bg':'rgba(255,255,255,.6)','--card-border':'1px solid rgba(20,30,60,.12)',
+           '--card-shadow':'0 8px 26px rgba(20,40,90,.10), inset 0 1px 0 rgba(255,255,255,.7)' },
+  dark:  { '--card-bg':'rgba(22,28,48,.55)','--card-border':'1px solid rgba(255,255,255,.13)',
+           '--card-shadow':'0 10px 30px rgba(0,0,10,.45), inset 0 1px 0 rgba(255,255,255,.06)' },
+};
+const SEEDS = ['#0B57D0','#00696D','#6750A4','#B34E00','#9C4146','#4A5C6A',
+               '#E0568C','#0891B2','#5E8C6A','#B8860B','#7B1FA2','#37474F'];
+
+/* 图标轨演示：语义槽位 → 三风格 path（产品形态 = icons.map/images 三级取值链，§4.5） */
+const NAV = [
+  { id:'home', label:'首页', paths:{
+    fill:'M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z',
+    round:'M12 4.2c.5 0 1 .17 1.4.5L19 9.4V18a2 2 0 01-2 2h-2.5v-4.8a2.5 2.5 0 00-5 0V20H7a2 2 0 01-2-2V9.4l5.6-4.7c.4-.33.9-.5 1.4-.5z',
+    outline:'M5 10.5L12 4.5l7 6V18a1.5 1.5 0 01-1.5 1.5H15v-4.3a3 3 0 00-6 0v4.3H6.5A1.5 1.5 0 015 18z' } },
+  { id:'ai', label:'AI', paths:{
+    fill:'M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9zM19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8z',
+    round:'M12 2.6c.7 3.1 2 4.6 5.1 5.3-3.1.7-4.4 2.2-5.1 5.3-.7-3.1-2-4.6-5.1-5.3 3.1-.7 4.4-2.2 5.1-5.3zM19 13.8c.4 1.7 1.1 2.5 2.8 2.9-1.7.4-2.4 1.2-2.8 2.9-.4-1.7-1.1-2.5-2.8-2.9 1.7-.4 2.4-1.2 2.8-2.9z',
+    outline:'M12 3.2l1.6 4.7 4.7 1.6-4.7 1.6L12 15.8l-1.6-4.7-4.7-1.6 4.7-1.6zM19.5 14.5l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z' } },
+  { id:'lab', label:'实验室', paths:{
+    fill:'M9 3h6v4l5 9a2 2 0 01-1.8 3H5.8A2 2 0 014 16l5-9z',
+    round:'M9 3.5h6c.3 0 .5.2.5.5v3.5l4.4 7.9A2.5 2.5 0 0117.7 19.5H6.3A2.5 2.5 0 014.1 15.4l4.4-7.9V4c0-.3.2-.5.5-.5z',
+    outline:'M9.5 4v4l-4.3 7.7A2 2 0 006.9 19h10.2a2 2 0 001.7-3.3L14.5 8V4' } },
+  { id:'profile', label:'我的', paths:{
+    fill:'M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4 0-7 2.5-7 5v1h14v-1c0-2.5-3-5-7-5z',
+    round:'M12 12.5a4.5 4.5 0 110-9 4.5 4.5 0 010 9zm0 2c-4.2 0-7.5 2.4-7.5 5v.5a1 1 0 001 1h13a1 1 0 001-1v-.5c0-2.6-3.3-5-7.5-5z',
+    outline:'M12 11.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7zm0 2.5c-3.9 0-7 2.3-7 4.5v1h14v-1c0-2.2-3.1-4.5-7-4.5z' } },
+];
+function iconSvg(style, path) {
+  if (style === 'outline')
+    return `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"/></svg>`;
+  return `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="${path}"/></svg>`;
+}
+function renderNavbar() {
+  const st = snapshot ? snapshot.iconStyle : 'fill';
+  document.getElementById('navbar').innerHTML = NAV.map(t =>
+    `<span class="ntab${state.page === t.id ? ' on' : ''}" data-tab="${t.id}">` +
+    `<span class="ic">${iconSvg(st, t.paths[st] || t.paths.fill)}</span>${t.label}</span>`).join('');
+}
+
+const state = { skinId:'baseline', domain:'light',
+  overlay:{ colorSeed:null, radiusScale:1, glass:false, bg:'skin', iconStyle:null },
+  pureBlack:false, dynamic:false, page:'home', stack:[] };
+
+/* ---------- 合并器：base ⊕ skin ⊕ overlay（+ 纯黑/动态后处理） ---------- */
+function resolve() {
+  const d = state.domain, sk = SKINS[state.skinId];
+  const vars = { ...BASE[d].vars, ...(sk[d] && sk[d].vars || {}) };
+  const src = {};
+  Object.keys(BASE[d].vars).forEach(k => src[k] = 'base');
+  if (state.skinId !== 'baseline') Object.keys(sk[d] && sk[d].vars || {}).forEach(k => src[k] = 'skin');
+  const touch = (map, s) => { Object.assign(vars, map); Object.keys(map).forEach(k => src[k] = s); };
+
+  if (state.overlay.bg !== 'skin') {
+    touch({ '--bg': BGS[state.overlay.bg] }, 'user');
+  }
+  if (state.overlay.colorSeed) {
+    const seed = state.overlay.colorSeed;
+    touch({ '--c-primary': seed, '--c-on-primary': lum(seed) > .62 ? '#101820' : '#FFFFFF' }, 'user');
+  }
+  if (state.dynamic) {  /* 优先级：动态取色 > 自定义 > 皮肤 */
+    touch({ '--c-primary': DYN_COLOR, '--c-on-primary': '#FFFFFF' }, 'dyn');
+  }
+  if (state.overlay.glass) touch(GLASS_PATCH[d], 'user');
+  if (state.overlay.radiusScale !== 1) {
+    const m = state.overlay.radiusScale;
+    const scaled = {};
+    ['--radius-card','--radius-chip','--radius-sheet'].forEach(k => {
+      scaled[k] = Math.max(0, Math.round(parseFloat(vars[k]) * m)) + 'px';
+    });
+    touch(scaled, 'user');
+  }
+  if (state.pureBlack && d === 'dark') {
+    touch({ '--bg':'#000000','--card-bg':'#0A0A0C','--nav-bg':'#050506','--search-bg':'#111114',
+            '--chip-bg':'#111114' }, 'pb');
+  }
+  const attrs = { ...sk.attrs };
+  if (state.overlay.glass) attrs.material = 'glass';
+  const iconStyle = state.overlay.iconStyle || sk.iconStyle || 'fill';
+  return { vars, src, attrs, iconStyle, skin: sk };
+}
+
+function lum(hex) {
+  const h = hex.replace('#','');
+  const r = parseInt(h.substr(0,2),16)/255, g = parseInt(h.substr(2,2),16)/255, b = parseInt(h.substr(4,2),16)/255;
+  return .2126*r + .7152*g + .0722*b;
+}
+
+/* ---------- 应用快照 ---------- */
+const phone = document.getElementById('phone');
+let snapshot = null;
+/* 皮肤可写的全部变量名前缀（切皮肤时先清空，避免上一套的 comp.banner/渐变残留 —— 对应产品里「快照全量替换」语义） */
+const SKIN_VAR_PREFIXES = ['--bg','--c-','--font-','--radius-','--card-','--search-','--chip-',
+                           '--nav-','--navfg','--pg','--btn-','--banner-'];
+function clearSkinVars() {
+  const props = [];
+  for (let i = 0; i < phone.style.length; i++) props.push(phone.style[i]);
+  props.filter(p => SKIN_VAR_PREFIXES.some(pre => p.startsWith(pre)))
+       .forEach(p => phone.style.removeProperty(p));
+}
+function apply() {
+  snapshot = resolve();
+  const t0 = performance.now();
+  clearSkinVars();
+  Object.entries(snapshot.vars).forEach(([k,v]) => phone.style.setProperty(k, v));
+  Object.entries(snapshot.attrs).forEach(([k,v]) => phone.dataset[k] = v);
+  phone.querySelectorAll('.banner,.pcard').forEach(el => el.classList.toggle('glasshl',
+    snapshot.attrs.material === 'glass'));
+  phone.style.setProperty('--navfg', snapshot.skin.navDark
+    ? (state.domain==='dark' ? '#17181A' : '#F5F3EF')
+    : snapshot.vars['--c-primary']);
+  renderNavbar();
+  renderPanel(); syncControls();
+  return (performance.now() - t0);
+}
+
+/* ---------- 面板渲染 ---------- */
+const SRC_LABEL = { base:['默认','base'], skin:['皮肤','skin'], user:['自定义','user'],
+                    dyn:['动态取色','dyn'], pb:['纯黑','pb'] };
+function renderPanel() {
+  const v = snapshot.vars, s = snapshot.src;
+  const rows = [
+    ['color.primary', v['--c-primary']],
+    ['color.onPrimary', v['--c-on-primary']],
+    ['shape.card', v['--radius-card']],
+    ['shape.chip', v['--radius-chip']],
+    ['shape.button', snapshot.attrs.button],
+    ['material.card', snapshot.attrs.material],
+    ['comp.banner', ('--banner-bg' in v && s['--banner-bg']==='skin') ? 'gradient·独立' : '继承全局'],
+    ['surface.background', state.overlay.bg !== 'skin' ? '自定义渐变' : (state.skinId==='baseline'?'默认纯色':'皮肤定义')],
+    ['type.family', fontFamilyLabel(v['--font-body'])],
+    ['navBar', snapshot.attrs.nav],
+    ['icons.style', snapshot.iconStyle + '（tab 图标）'],
+  ];
+  document.getElementById('tokenRows').innerHTML = rows.map(([k,val]) => {
+    const varKey = k==='color.primary' ? '--c-primary' : k==='color.onPrimary' ? '--c-on-primary'
+      : k==='shape.card' ? '--radius-card' : k==='shape.chip' ? '--radius-chip' : null;
+    const srcKey = varKey ? (s[varKey]||'base')
+      : k==='material.card' ? (state.overlay.glass ? 'user' : (state.skinId==='baseline'?'base':'skin'))
+      : k==='comp.banner' ? (varKey in s ? s[varKey] : (state.skinId==='neon'?'skin':'base'))
+      : k==='surface.background' ? (state.overlay.bg!=='skin'?'user':(state.skinId==='baseline'?'base':'skin'))
+      : k==='shape.button' || k==='navBar' ? (state.skinId==='baseline'?'base':'skin')
+      : k==='icons.style' ? (state.overlay.iconStyle ? 'user' : (state.skinId==='baseline'?'base':'skin'))
+      : 'base';
+    const [lab, cls] = SRC_LABEL[srcKey];
+    const sw = /^#/.test(val) ? `<span class="sw2" style="background:${val}"></span>` : '';
+    return `<div class="tokrow"><span class="k">${k}</span><span class="v">${val}${sw}<span class="src ${cls}">${lab}</span></span></div>`;
+  }).join('');
+
+  const ov = activeOverlayKeys();
+  document.getElementById('formula').innerHTML =
+    `当前生效 = <b>base</b> ⊕ <b>${SKINS[state.skinId].label}</b>${ov.length ? ` ⊕ <b>overlay[${ov.join(', ')}]</b>` : ''}` +
+    `${state.dynamic ? '<br>＋ 动态取色 ON（压制 color 段）' : ''}` +
+    `${state.pureBlack && state.domain==='dark' ? '<br>＋ 纯黑 ON（压制深色面）' : ''}` +
+    `<br>域 = ${state.domain === 'light' ? '亮色' : '暗色'}（环境开关 · 与皮肤正交）`;
+}
+function fontFamilyLabel(f){ return f===SERIF?'serif（衬线标题）': f===ROUND?'圆体（包内字体模拟）':'system'; }
+function activeOverlayKeys() {
+  const a = [];
+  if (state.overlay.colorSeed) a.push('color.seed');
+  if (state.overlay.radiusScale !== 1) a.push('shape.scale');
+  if (state.overlay.glass) a.push('material.glass');
+  if (state.overlay.bg !== 'skin') a.push('surface.bg');
+  if (state.overlay.iconStyle) a.push('icons.style');
+  return a;
+}
+
+/* ---------- 引擎日志 ---------- */
+const logs = [];
+function log(html, warn) {
+  logs.unshift(`<div${warn?' class="warn"':''}>· ${html}</div>`);
+  if (logs.length > 7) logs.pop();
+  document.getElementById('logbox').innerHTML = logs.join('');
+}
+
+/* ---------- 手机内控件同步 ---------- */
+function syncControls() {
+  const dirty = activeOverlayKeys().length > 0;
+  document.getElementById('dirtyBadge').style.display = dirty ? '' : 'none';
+  document.getElementById('curSkinName').textContent = SKINS[state.skinId].label + (dirty ? '（已自定义）' : '');
+  document.getElementById('curSkinPreview').innerHTML =
+    `<span style="width:18px;height:18px;border-radius:6px;border:1px solid rgba(128,128,128,.35);background:${SKINS[state.skinId].dot}"></span>`;
+  document.querySelectorAll('#segMode button').forEach(b => b.classList.toggle('on', b.dataset.mode === state.domain));
+  document.querySelectorAll('#segRadius button').forEach(b => b.classList.toggle('on', parseFloat(b.dataset.rad) === state.overlay.radiusScale));
+  document.querySelectorAll('#segIcon button').forEach(b => b.classList.toggle('on', (b.dataset.ico || null) === state.overlay.iconStyle));
+  document.getElementById('swGlass').classList.toggle('on', state.overlay.glass);
+  document.getElementById('swPureBlack').classList.toggle('on', state.pureBlack);
+  document.getElementById('swDynamic').classList.toggle('on', state.dynamic);
+  document.getElementById('pbHint').textContent = state.domain === 'dark' ? '仅暗色域生效 · 压制皮肤深色面' : '当前亮色域 · 切到暗色后生效';
+  document.querySelectorAll('#swatches .swatch').forEach(sw => {
+    sw.classList.toggle('on', state.overlay.colorSeed === sw.dataset.seed);
+  });
+  document.querySelectorAll('#bgChips .chip').forEach(ch => ch.classList.toggle('on', ch.dataset.bg === state.overlay.bg));
+  document.getElementById('colorHint').textContent = state.dynamic
+    ? '动态取色开启中：主题色被压制（优先级 动态取色 > 自定义 > 皮肤）'
+    : '点击即叠加到当前皮肤之上；选中皮肤默认色以外的颜色会标记「已自定义」';
+  renderSkinList();
+  document.querySelectorAll('#qpills .qpill').forEach(p => p.classList.toggle('on', p.dataset.skinId === state.skinId));
+}
+
+function renderSkinList() {
+  const box = document.getElementById('skinList');
+  box.innerHTML = '';
+  Object.entries(SKINS).forEach(([id, sk]) => {
+    const lv = { ...BASE.light.vars, ...(sk.light && sk.light.vars || {}) };
+    const div = document.createElement('div');
+    div.className = 'rowcard';
+    div.style.marginBottom = '10px';
+    div.innerHTML = `
+      <div class="skrow" data-skinapply="${id}">
+        <div class="prev" style="background:${lv['--bg']}">
+          <div class="mb" style="background:${lv['--banner-bg'] || lv['--card-bg']};border:${lv['--card-border']};${state.domain==='dark'?'':'border:1px solid rgba(0,0,0,.06)'}"></div>
+          <div class="mn" style="background:${lv['--nav-bg']};border:${lv['--nav-border']};${lv['--nav-border']==='none'?'border:1px solid rgba(0,0,0,.05)':''}"></div>
+        </div>
+        <div class="info">
+          <b>${sk.label} ${id === state.skinId ? '<span class="badge2">使用中</span>' : ''}</b>
+          <span>${sk.sub}</span>
+        </div>
+        <span class="tag2 ${sk.price.startsWith('Pro') ? 'pro' : ''}">${sk.price.split(' · ')[0]}</span>
+      </div>`;
+    box.appendChild(div);
+  });
+}
+
+/* ---------- 导航 ---------- */
+function showPage(id, push) {
+  if (push && state.page !== id) state.stack.push(state.page);
+  state.page = id;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('p-' + id).classList.add('active');
+  const isTab = ['home','ai','lab','profile'].includes(id);
+  document.querySelectorAll('.ntab').forEach(t => t.classList.toggle('on', t.dataset.tab === id));
+}
+document.getElementById('navbar').addEventListener('click', e => {
+  const t = e.target.closest('.ntab'); if (!t) return;
+  state.stack = []; showPage(t.dataset.tab); 
+});
+document.addEventListener('click', e => {
+  const nav = e.target.closest('[data-nav2]'); if (nav) { showPage(nav.dataset.nav2, true); return; }
+  const back = e.target.closest('[data-back]'); if (back) { showPage(state.stack.pop() || 'profile'); return; }
+  const poster = e.target.closest('.pcard'); if (poster) { showPage('detail', true); return; }
+  const applyBtn = e.target.closest('[data-skinapply]'); if (applyBtn) {
+    state.skinId = applyBtn.dataset.skinapply;
+    const ms = apply();
+    toast(`已应用「${SKINS[state.skinId].label}」· 保留你的自定义调整`);
+    log(`apply skin <em>${state.skinId}</em> ⊕ overlay{${activeOverlayKeys().join(',') || '∅'}} · ${ms.toFixed(2)}ms`);
+    return;
+  }
+  const act = e.target.closest('[data-act]'); if (act) {
+    if (act.dataset.act === 'export') openExport();
+    if (act.dataset.act === 'import') document.getElementById('fileIn').click();
+    if (act.dataset.act === 'reset') {
+      state.overlay = { colorSeed:null, radiusScale:1, glass:false, bg:'skin', iconStyle:null };
+      state.pureBlack = false; state.dynamic = false;
+      apply(); toast('已清除全部自定义（overlay 置空）');
+      log('reset overlay → ∅');
+    }
+  }
+});
+
+/* ---------- L2 控件 ---------- */
+document.getElementById('segMode').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.domain = b.dataset.mode; const ms = apply();
+  log(`环境开关 domain → <em>${state.domain}</em>（与皮肤正交）· ${ms.toFixed(2)}ms`);
+});
+document.getElementById('segRadius').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.overlay.radiusScale = parseFloat(b.dataset.rad); const ms = apply();
+  log(`overlay shape.scale → <em>${b.dataset.rad}×</em> · ${ms.toFixed(2)}ms`);
+});
+document.getElementById('segIcon').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.overlay.iconStyle = b.dataset.ico || null; const ms = apply();
+  log(`overlay icons.style → <em>${b.dataset.ico || '跟随皮肤'}</em> · ${ms.toFixed(2)}ms`);
+});
+document.getElementById('swGlass').addEventListener('click', () => {
+  state.overlay.glass = !state.overlay.glass; const ms = apply();
+  log(`overlay material.glass → <em>${state.overlay.glass}</em> · ${ms.toFixed(2)}ms`);
+});
+document.getElementById('swPureBlack').addEventListener('click', () => {
+  state.pureBlack = !state.pureBlack; const ms = apply();
+  log(`纯黑 → <em>${state.pureBlack}</em>（优先级压制深色面）· ${ms.toFixed(2)}ms`);
+  if (state.domain === 'light' && state.pureBlack) toast('纯黑已打开 · 切到暗色域查看效果');
+});
+document.getElementById('swDynamic').addEventListener('click', () => {
+  state.dynamic = !state.dynamic; const ms = apply();
+  log(`动态取色 → <em>${state.dynamic}</em>（压制 color 段 · 形态照常）· ${ms.toFixed(2)}ms`);
+});
+const swBox = document.getElementById('swatches');
+SEEDS.forEach(c => {
+  const d = document.createElement('div');
+  d.className = 'swatch'; d.dataset.seed = c; d.style.background = c;
+  d.onclick = () => { state.overlay.colorSeed = c; const ms = apply();
+    log(`overlay color.seed → <em>${c}</em> · ${ms.toFixed(2)}ms`); };
+  swBox.appendChild(d);
+});
+const rst = document.createElement('div');
+rst.className = 'swatch reset'; rst.textContent = '清除'; 
+rst.onclick = () => { state.overlay.colorSeed = null; apply(); log('overlay color.seed → ∅'); };
+swBox.appendChild(rst);
+document.getElementById('bgChips').addEventListener('click', e => {
+  const ch = e.target.closest('.chip'); if (!ch) return;
+  state.overlay.bg = ch.dataset.bg; const ms = apply();
+  log(`overlay surface.bg → <em>${ch.dataset.bg}</em> · ${ms.toFixed(2)}ms`);
+});
+
+/* ---------- 导出 / 导入（L3，真实文件） ---------- */
+function buildSkinJson() {
+  const v = snapshot.vars, d = state.domain;
+  return {
+    meta: { id: 'dao.skin.custom-' + Date.now().toString(36), name: '我的皮肤 · 导出自原型',
+            version: 1, minEngine: 1, mode: d, author: 'DaoBox 导出' },
+    color: { strategy: 'seed', seed: { [d]: v['--c-primary'] } },
+    shape: { card: parseInt(v['--radius-card']), chip: parseInt(v['--radius-chip']),
+             sheet: parseInt(v['--radius-sheet']), button: snapshot.attrs.button, navBar: snapshot.attrs.nav },
+    material: { card: snapshot.attrs.material, elevation: 'mid',
+                cardOpacity: snapshot.attrs.material === 'glass' ? 0.55 : 1 },
+    type: { family: fontFamilyLabel(v['--font-body']).includes('system') ? 'system' : fontFamilyLabel(v['--font-body']) },
+    surface: { background: state.overlay.bg !== 'skin' ? '自定义渐变（导出时拷入 bg/）' : '皮肤/默认',
+               backgroundDim: 0.35, scrimBlend: true },
+    _export_note: '由 DaoBox 皮肤原型导出：base ⊕ skin ⊕ overlay 已合并为快照',
+  };
+}
+function openExport() {
+  const json = JSON.stringify(buildSkinJson(), null, 2);
+  document.getElementById('sheetbox').innerHTML = `
+    <h3>导出皮肤包</h3>
+    <div class="note">真实产品中此处打包 .dsz（skin.json + bg/ + font/）；原型导出 skin.json 文件。自定义背景图导出时压缩转 webp 拷入包内。</div>
+    <pre>${json.replace(/</g,'&lt;')}</pre>
+    <div class="btns">
+      <button class="btn ghost" id="mClose">关闭</button>
+      <button class="btn" id="mDown">下载 skin.json</button>
+    </div>`;
+  document.getElementById('modal').classList.add('show');
+  document.getElementById('mClose').onclick = () => document.getElementById('modal').classList.remove('show');
+  document.getElementById('mDown').onclick = () => {
+    const blob = new Blob([json], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'skin.json'; a.click();
+    URL.revokeObjectURL(a.href);
+    toast('已下载 skin.json · 改完可在「导入」装回');
+    log('export snapshot → <em>skin.json</em>（overlay 已合并）');
+  };
+}
+const FORBIDDEN = ['action','route','feat','script','url','onclick','eval'];
+function checkForbidden(obj, path) {
+  for (const [k, val] of Object.entries(obj || {})) {
+    if (FORBIDDEN.includes(k.toLowerCase())) return path + k;
+    if (val && typeof val === 'object') { const hit = checkForbidden(val, path + k + '.'); if (hit) return hit; }
+  }
+  return null;
+}
+function importSkinObject(obj) {
+  if (!obj || typeof obj !== 'object' || !obj.meta || typeof obj.meta.id !== 'string') {
+    toast('导入失败：缺少 meta.id'); log('import 拒绝：无 meta.id', true); return false;
+  }
+  const bad = checkForbidden(obj, '');
+  if (bad) { toast(`导入拒绝：越权字段 ${bad}（红线 14）`); log(`import <span class="warn">拒绝：越权字段 ${bad}</span>`, true); return false; }
+  const id = obj.meta.id.replace(/[^\w.-]/g, '_');
+  const declared = ['both','light','dark'].includes(obj.meta.mode) ? obj.meta.mode : 'light';
+  const domains = declared === 'both' ? ['light','dark'] : [declared];
+
+  /* 域无关 token（shape / material / gradient 的「面」）：两域共用一份 */
+  const shared = {};
+  if (obj.shape) {
+    if (obj.shape.card != null) shared['--radius-card'] = obj.shape.card + 'px';
+    if (obj.shape.chip != null) shared['--radius-chip'] = obj.shape.chip + 'px';
+    if (obj.shape.sheet != null) shared['--radius-sheet'] = obj.shape.sheet + 'px';
+    if (obj.shape.button === 'pill') shared['--radius-button'] = '999px';
+    if (obj.shape.button === 'square') shared['--radius-button'] = '0px';
+    if (obj.shape.button === 'rounded') shared['--radius-button'] = '10px';
+  }
+  if (obj.gradient) {  /* 渐变只进「面」：按钮/卡片/横幅/底栏；前景色保持单色（§4.7） */
+    const g = obj.gradient;
+    const mk = x => x && x.stops ? `linear-gradient(${x.angle || 135}deg, ${x.stops.join(', ')})` : null;
+    if (mk(g.primary)) shared['--btn-bg'] = mk(g.primary);
+    if (mk(g.card)) shared['--card-bg'] = mk(g.card);
+    if (mk(g.banner)) shared['--banner-bg'] = mk(g.banner);
+    if (mk(g.navBar)) shared['--nav-bg'] = mk(g.navBar);
+  }
+
+  /* 分域 token（color）：both 皮肤两域各取自己的种子，单域皮肤另一域留空 → 回落引擎默认（§4.6） */
+  const perDomain = {};
+  domains.forEach(dm => {
+    const v = { ...shared };
+    if (obj.color && obj.color.seed) {
+      const seed = obj.color.seed[dm];
+      if (seed) {
+        v['--c-primary'] = seed;
+        v['--c-on-primary'] = lum(seed) > .62 ? '#101820' : '#FFFFFF';
+      }
+    }
+    if (shared['--btn-bg'] && v['--c-primary']) {
+      /* 渐变按钮的面已定义，on 色取反保证可读（真实引擎按 §8.2 对两端 stop 校验 AA） */
+      v['--c-on-primary'] = '#FFFFFF';
+    }
+    perDomain[dm] = v;
+  });
+
+  const anyLight = perDomain.light || {};
+  SKINS[id] = { label: obj.meta.name || id,
+    sub: `导入 · ${declared === 'both' ? '双域' : declared === 'dark' ? '仅暗色' : '仅亮色'} · ${new Date().toLocaleTimeString()}`,
+    price: '导入 · 用户', iconStyle: (obj.icons && obj.icons.style) || undefined,
+    attrs: { nav: obj.shape && obj.shape.navBar === 'floating' ? 'floating' : 'attached',
+             material: obj.material && obj.material.card || 'fill',
+             button: obj.shape && obj.shape.button || 'rounded' },
+    dot: anyLight['--c-primary'] || (perDomain.dark || {})['--c-primary'] || '#7CACF8',
+    light: perDomain.light ? { vars: perDomain.light } : {},
+    dark:  perDomain.dark  ? { vars: perDomain.dark }  : {} };
+  state.skinId = id;
+  state.domain = declared === 'dark' ? 'dark' : 'light';  /* 单域皮肤直接落到它声明的那一域 */
+  apply();
+  toast(`导入成功：${SKINS[id].label}（出现在皮肤列表）`);
+  log(`import skin <em>${id}</em> · schema ok · ${declared === 'both' ? '双域' : '单域(' + declared + ')'} · 已应用`);
+  renderQuickPills(); return true;
+}
+document.getElementById('fileIn').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { try { importSkinObject(JSON.parse(r.result)); }
+                     catch (err) { toast('导入失败：JSON 解析错误'); log('import <span class="warn">JSON 解析错误</span>', true); } };
+  r.readAsText(f); e.target.value = '';
+});
+window.__importSkinObject = importSkinObject; /* 供自动化测试 */
+
+/* ---------- 皮肤市场（协议对齐插件市场：索引 JSON / 同 id 归并 / md5 / delisted；此处为演示态） ---------- */
+function mkGradCss(g) { return g && g.stops ? `linear-gradient(${g.angle || 135}deg, ${g.stops.join(', ')})` : null; }
+const MARKET = {
+  official: { name: 'DaoBox 官方市场 · 预置', skins: [
+    { meta: { id: 'dao.skin.moss', name: '苔原绿', version: '1.1.0', mode: 'light' },
+      color: { seed: { light: '#2E7D5B' } },
+      shape: { card: 22, chip: 14, sheet: 30, button: 'pill', navBar: 'floating' },
+      material: { card: 'fill' },
+      _prev: 'linear-gradient(160deg,#E9F5EE 0%,#CBE8D6 100%)',
+      _tags: ['自然', '圆润'], _size: '312 KB', _changelog: '适配悬浮底栏' },
+    { meta: { id: 'dao.skin.nightscape', name: '暗夜紫', version: '1.0.2', mode: 'dark' },
+      color: { seed: { dark: '#B39DDB' } },
+      shape: { card: 14, chip: 10, sheet: 20, button: 'rounded', navBar: 'attached' },
+      material: { card: 'glass' },
+      _prev: 'linear-gradient(160deg,#241E33 0%,#171226 100%)',
+      _tags: ['深色', '玻璃'], _size: '268 KB', _changelog: '对比度修正' },
+  ]},
+  third: [
+    { name: '极客社区市场（示例三方源）', url: 'https://geek-skins.github.io/market.json', skins: [
+      { meta: { id: 'com.geek.cyber-sunset', name: '赛博落日', version: '1.0.0', mode: 'light' },
+        color: { seed: { light: '#7C4DFF' } },
+        shape: { card: 18, chip: 12, sheet: 26, button: 'pill', navBar: 'floating' },
+        material: { card: 'fill' },
+        gradient: {  /* 渐变演示：按钮/卡片/横幅三面渐变，文字保持单色 */
+          primary: { type: 'linear', angle: 135, stops: ['#FF6A88', '#FF99AC', '#7C4DFF'] },
+          card:    { type: 'linear', angle: 120, stops: ['#FFFFFF', '#FFE9F2'] },
+          banner:  { type: 'linear', angle: 110, stops: ['#FF9966', '#FF5E62', '#8E2DE2'] } },
+        _prev: 'linear-gradient(160deg,#FFB88C 0%,#FF5E94 55%,#7C4DFF 100%)',
+        _tags: ['渐变', '赛博'], _size: '240 KB', _changelog: '首发' },
+    ]},
+  ],
+};
+function renderMarket() {
+  const tab = state.mktTab || 'official';
+  document.querySelectorAll('#segMkt button').forEach(b => b.classList.toggle('on', b.dataset.mkt === tab));
+  document.getElementById('mktThird').style.display = tab === 'third' ? '' : 'none';
+  const list = document.getElementById('mktList');
+  list.innerHTML = '';
+  const sources = tab === 'official'
+    ? [{ name: MARKET.official.name, skins: MARKET.official.skins }]
+    : MARKET.third;
+  sources.forEach(src => {
+    const t = document.createElement('div');
+    t.className = 'settitle'; t.style.padding = '4px 6px'; t.textContent = src.name;
+    list.appendChild(t);
+    if (!src.skins.length) {
+      const e = document.createElement('div'); e.className = 'hintline';
+      e.textContent = '暂无条目（真实产品此处拉取该市场的 market.json 索引）';
+      list.appendChild(e); return;
+    }
+    src.skins.forEach(sk => {
+      const installed = !!SKINS[sk.meta.id];
+      const row = document.createElement('div');
+      row.className = 'rowcard'; row.style.marginBottom = '10px';
+      row.innerHTML = `
+        <div class="skrow">
+          <div class="prev" style="background:${sk._prev}">
+            <div class="mb" style="background:${mkGradCss(sk.gradient && sk.gradient.card) || 'rgba(255,255,255,.2)'};border:1px solid rgba(255,255,255,.25)"></div>
+            <div class="mn" style="background:${mkGradCss(sk.gradient && sk.gradient.primary) || 'rgba(255,255,255,.3)'}"></div>
+          </div>
+          <div class="info">
+            <b>${sk.meta.name} ${installed ? '<span class="badge2">已安装</span>' : ''}</b>
+            <span>v${sk.meta.version} · ${(sk._tags || []).join(' / ')} · ${sk._size || ''}</span>
+            <span style="opacity:.8">${sk._changelog || ''}</span>
+          </div>
+          <span class="btn" data-install="${sk.meta.id}" style="padding:7px 13px;${installed ? 'opacity:.45;pointer-events:none' : ''}">${installed ? '已安装' : '安装'}</span>
+        </div>`;
+      list.appendChild(row);
+    });
+  });
+}
+document.getElementById('segMkt').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.mktTab = b.dataset.mkt; renderMarket();
+});
+document.getElementById('mktList').addEventListener('click', e => {
+  const b = e.target.closest('[data-install]'); if (!b) return;
+  const id = b.dataset.install;
+  const all = [...MARKET.official.skins, ...MARKET.third.flatMap(m => m.skins)];
+  const def = all.find(s => s.meta.id === id); if (!def) return;
+  const ok = importSkinObject(JSON.parse(JSON.stringify(def)));
+  if (ok) { renderMarket(); renderQuickPills(); toast(`已安装「${def.meta.name}」并应用 · 皮肤页可见`); }
+});
+document.getElementById('mktAdd').addEventListener('click', () => {
+  const u = document.getElementById('mktUrl').value.trim();
+  if (!u) { toast('请输入市场 URL'); return; }
+  let host = u; try { host = new URL(u).host; } catch (e) {}
+  MARKET.third.push({ name: '社区市场 · ' + host, url: u, skins: [] });
+  document.getElementById('mktUrl').value = '';
+  state.mktTab = 'third'; renderMarket();
+  toast('已添加三方市场（演示）· 真实产品此处拉取 market.json');
+  log(`market add <em>${host}</em>（演示态，未拉取索引）`);
+});
+
+/* ---------- 快捷面板 / 对比条 ---------- */
+function renderQuickPills() {
+  const box = document.getElementById('qpills');
+  box.innerHTML = '';
+  Object.entries(SKINS).forEach(([id, sk]) => {
+    const b = document.createElement('button');
+    b.className = 'qpill'; b.dataset.skinId = id;
+    b.innerHTML = `<span class="d" style="background:${sk.dot}"></span>${sk.label}`;
+    b.onclick = () => { state.skinId = id; const ms = apply();
+      log(`apply skin <em>${id}</em> · ${ms.toFixed(2)}ms`);
+      toast(`已应用「${sk.label}」`); };
+    box.appendChild(b);
+  });
+  document.querySelectorAll('#qpills .qpill').forEach(p => p.classList.toggle('on', p.dataset.skinId === state.skinId));
+}
+
+function renderMinis() {
+  const row = document.getElementById('minirow');
+  Object.entries(SKINS).forEach(([id, sk]) => {
+    const v = { ...BASE.light.vars, ...(sk.light && sk.light.vars || {}) };
+    const m = document.createElement('div'); m.className = 'mini';
+    m.innerHTML = `
+      <div class="mscr" style="${varStr(v)}">
+        <div class="mbar"></div>
+        <div class="mcard"></div>
+        <div class="mpair"><div class="mp"></div><div class="mp"></div></div>
+        <div class="mnav"></div>
+      </div>
+      <div class="capm"><b>${sk.label}</b>${sk.sub}</div>`;
+    row.appendChild(m);
+  });
+}
+function varStr(v) { return Object.entries(v).map(([k,x]) => `${k}:${x}`).join(';'); }
+
+/* ---------- 内容数据 ---------- */
+const POSTERS = [
+  ['长安三万里','动画 · 168 分钟','--pg1','NO.1'], ['深海回声','科幻 · 02 集','--pg2','NO.2'],
+  ['林间学校','剧情 · 全 12 集','--pg3','NO.3'], ['星轨旅人','纪录 · 4K','--pg4','NO.4'],
+  ['雾中列车','悬疑 · 06 集','--pg2','NO.5'], ['第七个房间','惊悚 · 全 8 集','--pg4','NO.6'],
+];
+document.getElementById('homeGrid').innerHTML = POSTERS.map(([t,s,g,r]) => `
+  <div class="pcard"><div class="poster" style="--pg:var(${g})"><span class="rank">${r}</span></div>
+  <div class="t"><b>${t}</b><span>${s}</span></div></div>`).join('');
+document.getElementById('epGrid').innerHTML = Array.from({length:12}, (_,i) =>
+  `<span class="ep${i===6?' on':''}">${String(i+1).padStart(2,'0')}</span>`).join('');
+
+/* ---------- toast ---------- */
+let toastTimer = null;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ---------- 启动 ---------- */
+renderQuickPills(); renderMinis(); renderMarket();
+const bootMs = apply();
+log(`engine boot · 快照注入 ${Object.keys(BASE.light.vars).length}+ tokens · <em>${bootMs.toFixed(2)}ms</em>`);
+showPage('home');
+</script>
+</body>
+</html>

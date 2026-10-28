@@ -7,7 +7,7 @@
        计算 md5/size，扫描 previews/，生成 skin-market.json 索引。
 
 上架新皮肤：在 SKINS 里加一个定义 → 放一张 previews/<id>.webp → 跑本脚本 → 提交。
-规则与字段语义见 DaoBox 仓库 docs/SKIN-SYSTEM-DESIGN.md §七 与 docs/SKIN-AUTHORING-GUIDE.md。
+制作指南见本仓 AUTHORING.md；字段语义速查见本仓 README。
 """
 import hashlib
 import json

@@ -34,7 +34,7 @@ tools/build_market.py 构建脚本：定义 → .dsz + md5 + 索引 一条命令
 
 ## 上架新皮肤
 
-1. 按 DaoBox 仓库 `docs/SKIN-AUTHORING-GUIDE.md` 制作并通过本地导入测试；
+1. 按 **[AUTHORING.md](AUTHORING.md)**（本仓制作指南，含 AI 提示词模板）制作并通过本地导入测试；想先玩玩看 → [prototype.html](prototype.html)（五套皮肤交互原型）；
 2. 在 `tools/build_market.py` 的 `SKINS` 里加定义，`previews/` 放一张 `预览.webp`；
 3. `python tools/build_market.py` → 提交 PR；
 4. 审核三条：校验器全绿、双域 AA 对比度通过、描述与实际相符（**不审审美**）。
