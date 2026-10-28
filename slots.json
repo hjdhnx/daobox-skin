@@ -1,0 +1,755 @@
+{
+  "updatedAt": "2026-10-28",
+  "engine": 4,
+  "note": "图标名键（不含点号）写 iconNames 里的名字；位置槽位键（含点号）写 slots 里的 slot。值除 M3 名外可用图片 scheme（见 valueSchemes）；加载失败一律回落默认。",
+  "iconNames": [
+    {
+      "name": "chevron_right",
+      "count": 14
+    },
+    {
+      "name": "arrow_back",
+      "count": 11
+    },
+    {
+      "name": "refresh",
+      "count": 8
+    },
+    {
+      "name": "search",
+      "count": 8
+    },
+    {
+      "name": "grid_view",
+      "count": 7
+    },
+    {
+      "name": "expand_more",
+      "count": 7
+    },
+    {
+      "name": "delete_outline",
+      "count": 7
+    },
+    {
+      "name": "check",
+      "count": 7
+    },
+    {
+      "name": "image",
+      "count": 6
+    },
+    {
+      "name": "bolt",
+      "count": 6
+    },
+    {
+      "name": "link",
+      "count": 6
+    },
+    {
+      "name": "radar",
+      "count": 6
+    },
+    {
+      "name": "play_arrow",
+      "count": 5
+    },
+    {
+      "name": "download",
+      "count": 5
+    },
+    {
+      "name": "restart_alt",
+      "count": 5
+    },
+    {
+      "name": "tune",
+      "count": 5
+    },
+    {
+      "name": "cloud_off",
+      "count": 4
+    },
+    {
+      "name": "settings",
+      "count": 4
+    },
+    {
+      "name": "close",
+      "count": 4
+    },
+    {
+      "name": "add",
+      "count": 4
+    },
+    {
+      "name": "content_copy",
+      "count": 4
+    },
+    {
+      "name": "memory",
+      "count": 4
+    },
+    {
+      "name": "more_vert",
+      "count": 4
+    },
+    {
+      "name": "edit",
+      "count": 4
+    },
+    {
+      "name": "sort",
+      "count": 3
+    },
+    {
+      "name": "folder_open",
+      "count": 3
+    },
+    {
+      "name": "inventory_2",
+      "count": 3
+    },
+    {
+      "name": "movie",
+      "count": 3
+    },
+    {
+      "name": "filter_alt",
+      "count": 3
+    },
+    {
+      "name": "music_note",
+      "count": 3
+    },
+    {
+      "name": "dns",
+      "count": 3
+    },
+    {
+      "name": "auto_awesome",
+      "count": 3
+    },
+    {
+      "name": "travel_explore",
+      "count": 3
+    },
+    {
+      "name": "public",
+      "count": 3
+    },
+    {
+      "name": "menu_book",
+      "count": 3
+    },
+    {
+      "name": "list",
+      "count": 3
+    },
+    {
+      "name": "tv",
+      "count": 3
+    },
+    {
+      "name": "arrow_upward",
+      "count": 2
+    },
+    {
+      "name": "lock_outline",
+      "count": 2
+    },
+    {
+      "name": "qr_code_2",
+      "count": 2
+    },
+    {
+      "name": "folder_zip",
+      "count": 2
+    },
+    {
+      "name": "bookmark",
+      "count": 2
+    },
+    {
+      "name": "history",
+      "count": 2
+    },
+    {
+      "name": "north_east",
+      "count": 2
+    },
+    {
+      "name": "arrow_forward",
+      "count": 2
+    },
+    {
+      "name": "tab",
+      "count": 2
+    },
+    {
+      "name": "cast",
+      "count": 2
+    },
+    {
+      "name": "repeat",
+      "count": 2
+    },
+    {
+      "name": "fast_forward",
+      "count": 2
+    },
+    {
+      "name": "subtitles",
+      "count": 2
+    },
+    {
+      "name": "description",
+      "count": 2
+    },
+    {
+      "name": "text_fields",
+      "count": 2
+    },
+    {
+      "name": "high_quality",
+      "count": 2
+    },
+    {
+      "name": "bedtime",
+      "count": 2
+    },
+    {
+      "name": "flip",
+      "count": 2
+    },
+    {
+      "name": "workspace_premium",
+      "count": 2
+    },
+    {
+      "name": "check_circle",
+      "count": 2
+    },
+    {
+      "name": "extension",
+      "count": 2
+    },
+    {
+      "name": "block",
+      "count": 2
+    },
+    {
+      "name": "error_outline",
+      "count": 2
+    },
+    {
+      "name": "delete_sweep",
+      "count": 2
+    },
+    {
+      "name": "swap_vert",
+      "count": 1
+    },
+    {
+      "name": "movie_filter",
+      "count": 1
+    },
+    {
+      "name": "warning_amber",
+      "count": 1
+    },
+    {
+      "name": "warning",
+      "count": 1
+    },
+    {
+      "name": "bookmark_border",
+      "count": 1
+    },
+    {
+      "name": "cast_connected",
+      "count": 1
+    },
+    {
+      "name": "swap_horiz",
+      "count": 1
+    },
+    {
+      "name": "more_horiz",
+      "count": 1
+    },
+    {
+      "name": "alt_route",
+      "count": 1
+    },
+    {
+      "name": "checklist",
+      "count": 1
+    },
+    {
+      "name": "radio_button_unchecked",
+      "count": 1
+    },
+    {
+      "name": "subtitles_off",
+      "count": 1
+    },
+    {
+      "name": "power_settings_new",
+      "count": 1
+    },
+    {
+      "name": "search_off",
+      "count": 1
+    },
+    {
+      "name": "volume_up",
+      "count": 1
+    },
+    {
+      "name": "aspect_ratio",
+      "count": 1
+    },
+    {
+      "name": "chat_bubble_outline",
+      "count": 1
+    },
+    {
+      "name": "playlist_add",
+      "count": 1
+    },
+    {
+      "name": "menu",
+      "count": 1
+    },
+    {
+      "name": "star",
+      "count": 1
+    },
+    {
+      "name": "favorite",
+      "count": 1
+    },
+    {
+      "name": "timeline",
+      "count": 1
+    },
+    {
+      "name": "favorite_border",
+      "count": 1
+    },
+    {
+      "name": "info",
+      "count": 1
+    },
+    {
+      "name": "folder_special",
+      "count": 1
+    },
+    {
+      "name": "skip_previous",
+      "count": 1
+    },
+    {
+      "name": "skip_next",
+      "count": 1
+    },
+    {
+      "name": "account_balance_wallet",
+      "count": 1
+    },
+    {
+      "name": "info_outline",
+      "count": 1
+    },
+    {
+      "name": "code",
+      "count": 1
+    },
+    {
+      "name": "shopping_cart",
+      "count": 1
+    },
+    {
+      "name": "palette",
+      "count": 1
+    },
+    {
+      "name": "apps",
+      "count": 1
+    },
+    {
+      "name": "content_paste_go",
+      "count": 1
+    },
+    {
+      "name": "crop",
+      "count": 1
+    },
+    {
+      "name": "download_for_offline",
+      "count": 1
+    },
+    {
+      "name": "save_alt",
+      "count": 1
+    },
+    {
+      "name": "auto_stories",
+      "count": 1
+    },
+    {
+      "name": "format_bold",
+      "count": 1
+    },
+    {
+      "name": "schedule",
+      "count": 1
+    },
+    {
+      "name": "percent",
+      "count": 1
+    },
+    {
+      "name": "battery_full",
+      "count": 1
+    },
+    {
+      "name": "lightbulb",
+      "count": 1
+    },
+    {
+      "name": "vertical_align_bottom",
+      "count": 1
+    },
+    {
+      "name": "network_check",
+      "count": 1
+    },
+    {
+      "name": "dashboard_customize",
+      "count": 1
+    },
+    {
+      "name": "verified_user_outlined",
+      "count": 1
+    },
+    {
+      "name": "playlist_add_check",
+      "count": 1
+    },
+    {
+      "name": "folder",
+      "count": 1
+    },
+    {
+      "name": "data_usage",
+      "count": 1
+    },
+    {
+      "name": "restore",
+      "count": 1
+    },
+    {
+      "name": "upload_file",
+      "count": 1
+    },
+    {
+      "name": "pie_chart",
+      "count": 1
+    },
+    {
+      "name": "select_all",
+      "count": 1
+    },
+    {
+      "name": "hourglass_empty",
+      "count": 1
+    },
+    {
+      "name": "rule",
+      "count": 1
+    },
+    {
+      "name": "verified_user",
+      "count": 1
+    },
+    {
+      "name": "health_and_safety",
+      "count": 1
+    },
+    {
+      "name": "data_object",
+      "count": 1
+    },
+    {
+      "name": "fullscreen_exit",
+      "count": 1
+    }
+  ],
+  "slots": [
+    {
+      "slot": "tab.agent",
+      "default": "auto_awesome",
+      "desc": "底栏「AI」tab（TABS 派生）"
+    },
+    {
+      "slot": "tab.home",
+      "default": "home",
+      "desc": "底栏「首页」tab（TABS 派生）"
+    },
+    {
+      "slot": "tab.lab",
+      "default": "science",
+      "desc": "底栏「实验室」tab（TABS 派生）"
+    },
+    {
+      "slot": "tab.live",
+      "default": "live_tv",
+      "desc": "底栏「电视」tab（TABS 派生）"
+    },
+    {
+      "slot": "tab.more",
+      "default": "more_horiz",
+      "desc": "底栏「更多」tab（TABS 派生）"
+    },
+    {
+      "slot": "tab.profile",
+      "default": "person",
+      "desc": "底栏「我的」tab（TABS 派生）"
+    },
+    {
+      "slot": "tab.search",
+      "default": "search",
+      "desc": "底栏「搜索」tab（TABS 派生）"
+    },
+    {
+      "slot": "tab.shelf",
+      "default": "menu_book",
+      "desc": "底栏「书架」tab（TABS 派生）"
+    },
+    {
+      "slot": "tab.vod",
+      "default": "movie",
+      "desc": "底栏「点播」tab（TABS 派生）"
+    }
+  ],
+  "reserved": [
+    {
+      "key": "home",
+      "material": "home"
+    },
+    {
+      "key": "movie",
+      "material": "movie"
+    },
+    {
+      "key": "live",
+      "material": "live_tv"
+    },
+    {
+      "key": "shelf",
+      "material": "menu_book"
+    },
+    {
+      "key": "search",
+      "material": "search"
+    },
+    {
+      "key": "agent",
+      "material": "auto_awesome"
+    },
+    {
+      "key": "lab",
+      "material": "science"
+    },
+    {
+      "key": "profile",
+      "material": "person"
+    },
+    {
+      "key": "more",
+      "material": "more_horiz"
+    },
+    {
+      "key": "back",
+      "material": "arrow_back"
+    },
+    {
+      "key": "forward",
+      "material": "arrow_forward"
+    },
+    {
+      "key": "close",
+      "material": "close"
+    },
+    {
+      "key": "menu",
+      "material": "menu"
+    },
+    {
+      "key": "refresh",
+      "material": "refresh"
+    },
+    {
+      "key": "settings",
+      "material": "settings"
+    },
+    {
+      "key": "play",
+      "material": "play_arrow"
+    },
+    {
+      "key": "pause",
+      "material": "pause"
+    },
+    {
+      "key": "favorite",
+      "material": "favorite"
+    },
+    {
+      "key": "favoriteOff",
+      "material": "favorite_border"
+    },
+    {
+      "key": "history",
+      "material": "history"
+    },
+    {
+      "key": "download",
+      "material": "download"
+    },
+    {
+      "key": "folder",
+      "material": "folder"
+    },
+    {
+      "key": "chevronRight",
+      "material": "chevron_right"
+    },
+    {
+      "key": "chevronDown",
+      "material": "expand_more"
+    },
+    {
+      "key": "check",
+      "material": "check"
+    },
+    {
+      "key": "add",
+      "material": "add"
+    },
+    {
+      "key": "delete",
+      "material": "delete"
+    },
+    {
+      "key": "edit",
+      "material": "edit"
+    },
+    {
+      "key": "moreVert",
+      "material": "more_vert"
+    },
+    {
+      "key": "filter",
+      "material": "filter_alt"
+    },
+    {
+      "key": "sort",
+      "material": "sort"
+    },
+    {
+      "key": "grid",
+      "material": "grid_view"
+    },
+    {
+      "key": "list",
+      "material": "view_list"
+    },
+    {
+      "key": "music",
+      "material": "music_note"
+    },
+    {
+      "key": "book",
+      "material": "auto_stories"
+    },
+    {
+      "key": "plugin",
+      "material": "extension"
+    },
+    {
+      "key": "backup",
+      "material": "cloud_upload"
+    },
+    {
+      "key": "lock",
+      "material": "lock"
+    },
+    {
+      "key": "qr",
+      "material": "qr_code_2"
+    },
+    {
+      "key": "tv",
+      "material": "tv"
+    },
+    {
+      "key": "cast",
+      "material": "cast"
+    },
+    {
+      "key": "volume",
+      "material": "volume_up"
+    },
+    {
+      "key": "fullscreen",
+      "material": "fullscreen"
+    },
+    {
+      "key": "light",
+      "material": "light_mode"
+    },
+    {
+      "key": "dark",
+      "material": "dark_mode"
+    },
+    {
+      "key": "auto",
+      "material": "brightness_auto"
+    },
+    {
+      "key": "info",
+      "material": "info"
+    }
+  ],
+  "valueSchemes": [
+    {
+      "scheme": "(裸 M3 名)",
+      "example": "east",
+      "desc": "Material Symbols 字体 glyph"
+    },
+    {
+      "scheme": "skin:",
+      "example": "skin:icons/x.webp",
+      "desc": "皮肤包内图片（裸相对路径视为 skin: 简写）"
+    },
+    {
+      "scheme": "asset:",
+      "example": "asset:images/logo.webp",
+      "desc": "App 内置 assets 资源图"
+    },
+    {
+      "scheme": "file://",
+      "example": "file:///storage/emulated/0/Pictures/x.png",
+      "desc": "本机图片（平台访问权限照常约束）"
+    },
+    {
+      "scheme": "http(s)://",
+      "example": "https://cdn.example.com/x.webp",
+      "desc": "网络图片（≤200KB、5s 超时、磁盘缓存、失败回落默认）"
+    }
+  ]
+}

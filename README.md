@@ -29,6 +29,9 @@ https://hjdhnx.github.io/daobox-skin/skin-market.json
 skin-market.json     市场索引（客户端拉取这一个文件；url 均为相对路径，仓库整体迁移零改动）
 skins/*.dsz          皮肤包（zip：skin.json；发布后不可改名——md5 与索引绑定）
 previews/*.webp      预览图 750×520（App 商店页展示用，不进运行时内存）
+SLOTS.md / slots.json 图标槽位表（可自定义的图标键白名单 + 位置槽位，由源码机械派生）
+AUTHORING.md         皮肤制作指南（公开镜像）
+prototype.html       交互原型（五套皮肤，浏览器直接打开）
 tools/build_market.py 构建脚本：定义 → .dsz + md5 + 索引 一条命令
 ```
 
