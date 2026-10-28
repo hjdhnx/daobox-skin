@@ -415,13 +415,18 @@
             </div>
 
             <div class="setgroup">
-              <div class="settitle">图标风格（overlay · icons 轨）</div>
+              <div class="settitle">图标（overlay · icons 轨）</div>
               <div class="rowcard"><div class="setrow" style="padding:8px 12px">
                 <div class="segd" id="segIcon" style="flex:1">
                   <button data-ico="">跟随皮肤</button><button data-ico="outline">线性</button><button data-ico="round">圆润</button><button data-ico="fill">填充</button>
                 </div>
               </div></div>
-              <div class="hintline">产品形态：皮肤包可换任意图标槽位（M3 全库名称 / asset: 内置图 / 包内自绘图，tint 染色自动适配明暗）· 此处演示底栏图标</div>
+              <div class="rowcard" style="margin-top:8px"><div class="setrow" style="padding:8px 12px">
+                <div class="segd" id="segChev" style="flex:1">
+                  <button data-chev="">跟随皮肤</button><button data-chev="chevron_right">尖角</button><button data-chev="double_arrow">双箭头</button><button data-chev="east">长箭头</button>
+                </div>
+              </div></div>
+              <div class="hintline">上行=底栏风格；下行=「行尾箭头」<b>图标名键</b>（chevron_right 同名全换：所有设置行一起变）。<b>槽位键</b>（换 A 留 B）看墨石直角皮肤——只换本页行尾箭头为长箭头，其它页面不动</div>
             </div>
 
             <div class="setgroup rowcard">
@@ -612,6 +617,7 @@ const SKINS = {
 
   ink: { label:'墨石直角', sub:'纸墨编辑风 · 锐利', price:'免费 · 内置', iconStyle:'outline',
     attrs:{ nav:'attached', material:'outline', button:'square' }, navDark:true,
+    icons:{ map:{ 'appearance.chev':'east' } },   /* 槽位键（含点号）：只换外观页行尾箭头 —— 换 A 留 B 演示 */
     dot:'linear-gradient(135deg,#F5F3EF 45%,#17181A 55%)',
     light:{ vars:{
       '--bg':'linear-gradient(180deg,#F6F4EF 0%,#EFEBE2 100%)',
@@ -752,8 +758,27 @@ function renderNavbar() {
     `<span class="ic">${iconSvg(st, t.paths[st] || t.paths.fill)}</span>${t.label}</span>`).join('');
 }
 
+/* 行尾箭头：双键解析演示 —— 槽位（appearance.chev，仅外观页）> 图标名（chevron_right，全站）> 默认 */
+const CHEV_PATHS = {
+  chevron_right: 'M9 6l6 6-6 6',
+  double_arrow:  'M6 6l6 6-6 6M13 6l6 6-6 6',
+  east:          'M5 12h13M12 6l6 6-6 6',
+};
+function chevSvg(name) {
+  const p = CHEV_PATHS[name] || CHEV_PATHS.chevron_right;
+  return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="${p}"/></svg>`;
+}
+function renderChevrons() {
+  document.querySelectorAll('.chev').forEach(el => {
+    const pg = el.closest('.page');
+    const slot = pg && pg.id === 'p-appearance' ? 'appearance.chev' : null;
+    const g = (slot && snapshot.icons.slots[slot]) || snapshot.icons.names['chevron_right'] || 'chevron_right';
+    el.innerHTML = chevSvg(g);
+  });
+}
+
 const state = { skinId:'baseline', domain:'light',
-  overlay:{ colorSeed:null, radiusScale:1, glass:false, bg:'skin', iconStyle:null },
+  overlay:{ colorSeed:null, radiusScale:1, glass:false, bg:'skin', iconStyle:null, chev:null },
   pureBlack:false, dynamic:false, page:'home', stack:[] };
 
 /* ---------- 合并器：base ⊕ skin ⊕ overlay（+ 纯黑/动态后处理） ---------- */
@@ -791,7 +816,11 @@ function resolve() {
   const attrs = { ...sk.attrs };
   if (state.overlay.glass) attrs.material = 'glass';
   const iconStyle = state.overlay.iconStyle || sk.iconStyle || 'fill';
-  return { vars, src, attrs, iconStyle, skin: sk };
+  /* 图标轨双键（§4.5）：含点号 = 位置槽位（换 A 留 B）；不含点号 = 图标名（同名全换） */
+  const iconNames = {}, iconSlots = {};
+  Object.entries(sk.icons && sk.icons.map || {}).forEach(([k, v]) => (k.includes('.') ? iconSlots : iconNames)[k] = v);
+  if (state.overlay.chev) iconNames['chevron_right'] = state.overlay.chev;  /* overlay 走图标名键：同名全换 */
+  return { vars, src, attrs, iconStyle, icons: { names: iconNames, slots: iconSlots }, skin: sk };
 }
 
 function lum(hex) {
@@ -824,6 +853,7 @@ function apply() {
     ? (state.domain==='dark' ? '#17181A' : '#F5F3EF')
     : snapshot.vars['--c-primary']);
   renderNavbar();
+  renderChevrons();
   renderPanel(); syncControls();
   return (performance.now() - t0);
 }
@@ -845,6 +875,8 @@ function renderPanel() {
     ['type.family', fontFamilyLabel(v['--font-body'])],
     ['navBar', snapshot.attrs.nav],
     ['icons.style', snapshot.iconStyle + '（tab 图标）'],
+    ['icons.chevron_right', snapshot.icons.names['chevron_right'] || 'chevron_right（默认）'],
+    ['icons.appearance.chev', snapshot.icons.slots['appearance.chev'] || '未精控 → 走图标名/默认'],
   ];
   document.getElementById('tokenRows').innerHTML = rows.map(([k,val]) => {
     const varKey = k==='color.primary' ? '--c-primary' : k==='color.onPrimary' ? '--c-on-primary'
@@ -855,6 +887,10 @@ function renderPanel() {
       : k==='surface.background' ? (state.overlay.bg!=='skin'?'user':(state.skinId==='baseline'?'base':'skin'))
       : k==='shape.button' || k==='navBar' ? (state.skinId==='baseline'?'base':'skin')
       : k==='icons.style' ? (state.overlay.iconStyle ? 'user' : (state.skinId==='baseline'?'base':'skin'))
+      : k==='icons.chevron_right' ? (state.overlay.chev ? 'user'
+          : (snapshot.skin.icons && Object.keys(snapshot.skin.icons.map).some(k => !k.includes('.')) ? 'skin' : 'base'))
+      : k==='icons.appearance.chev' ? (snapshot.icons.slots['appearance.chev'] ? 'skin'
+          : (state.overlay.chev ? 'user' : 'base'))
       : 'base';
     const [lab, cls] = SRC_LABEL[srcKey];
     const sw = /^#/.test(val) ? `<span class="sw2" style="background:${val}"></span>` : '';
@@ -876,6 +912,7 @@ function activeOverlayKeys() {
   if (state.overlay.glass) a.push('material.glass');
   if (state.overlay.bg !== 'skin') a.push('surface.bg');
   if (state.overlay.iconStyle) a.push('icons.style');
+  if (state.overlay.chev) a.push('icons.chev');
   return a;
 }
 
@@ -897,6 +934,7 @@ function syncControls() {
   document.querySelectorAll('#segMode button').forEach(b => b.classList.toggle('on', b.dataset.mode === state.domain));
   document.querySelectorAll('#segRadius button').forEach(b => b.classList.toggle('on', parseFloat(b.dataset.rad) === state.overlay.radiusScale));
   document.querySelectorAll('#segIcon button').forEach(b => b.classList.toggle('on', (b.dataset.ico || null) === state.overlay.iconStyle));
+  document.querySelectorAll('#segChev button').forEach(b => b.classList.toggle('on', (b.dataset.chev || null) === state.overlay.chev));
   document.getElementById('swGlass').classList.toggle('on', state.overlay.glass);
   document.getElementById('swPureBlack').classList.toggle('on', state.pureBlack);
   document.getElementById('swDynamic').classList.toggle('on', state.dynamic);
@@ -964,7 +1002,7 @@ document.addEventListener('click', e => {
     if (act.dataset.act === 'export') openExport();
     if (act.dataset.act === 'import') document.getElementById('fileIn').click();
     if (act.dataset.act === 'reset') {
-      state.overlay = { colorSeed:null, radiusScale:1, glass:false, bg:'skin', iconStyle:null };
+      state.overlay = { colorSeed:null, radiusScale:1, glass:false, bg:'skin', iconStyle:null, chev:null };
       state.pureBlack = false; state.dynamic = false;
       apply(); toast('已清除全部自定义（overlay 置空）');
       log('reset overlay → ∅');
@@ -987,6 +1025,11 @@ document.getElementById('segIcon').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   state.overlay.iconStyle = b.dataset.ico || null; const ms = apply();
   log(`overlay icons.style → <em>${b.dataset.ico || '跟随皮肤'}</em> · ${ms.toFixed(2)}ms`);
+});
+document.getElementById('segChev').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.overlay.chev = b.dataset.chev || null; const ms = apply();
+  log(`overlay icons[chevron_right] → <em>${b.dataset.chev || '跟随皮肤'}</em>（图标名键 · 同名全换）· ${ms.toFixed(2)}ms`);
 });
 document.getElementById('swGlass').addEventListener('click', () => {
   state.overlay.glass = !state.overlay.glass; const ms = apply();

@@ -138,18 +138,27 @@ my-skin.dsz
 
 ### 2.7 icons——图标换装
 
-三级取值链：`images`（自绘图）> `map`（M3 图标名）> 默认。
+**双键取值**，每处图标独立解析：语义槽位（`images` > `map` 里的槽位键）＞ 图标名替换（`map` 里的图标名键）＞ 默认。
 
 ```json
 "icons": {
   "tint": "auto",
-  "map":   { "tab.home": "cottage", "tab.profile": "person_rounded" },
+  "map":   { "chevron_right": "east",           ← 图标名键（不含点号）：全站所有这个图标一起换
+             "settings.row.chevron": "east",    ← 槽位键（含点号）：只换「设置行行尾箭头」这个位置
+             "tab.home": "cottage",             ← 槽位键：只换底栏 home
+             "tab.profile": "person_rounded" },
   "images":{ "tab.ai": "icons/sparkle_line.webp",
              "tab.lab": { "light": "icons/flask_light.webp", "dark": "icons/flask_dark.webp" } }
 }
 ```
 
-- `map` 的值必须是 Material Symbols 图标名（全库约 2500 个，搜 "Material Symbols" 官网复制名字）；不存在的名字该槽位回落默认，不拒包；
+**「换 A 留 B」规则**：键**含点号 = 位置槽位**（Material 名不含点号，零歧义）。两个控件
+用了同一个图标时：只写图标名键 → A、B 一起换；只想换 A → 给 A 的位置写一条槽位键，
+B 不写就保持默认。槽位由页面侧标注（常见位置类别如底栏 `tab.*`、设置行、播放控制条
+已内置），未标注的位置只有图标名粒度。
+
+其余规则：
+- `map` 的值必须是 Material Symbols 图标名（全库约 2500 个，搜 "Material Symbols" 官网复制名字）；不存在的名字该键回落默认，不拒包；
 - `tint: "auto"`（推荐）：图片按单色处理、随语义色染色——**一张图自动适配明暗**；`tint: "color"` 原色渲染则必须明暗各一张；
 - 图片规格：48×48 或 96×96（2x）、webp/png、单张 ≤20KB、合计 ≤500KB；
 - 路径只许包内相对路径或 `asset:`（App 内置资源）；`http://`、`file://`、绝对路径一律拒绝。
