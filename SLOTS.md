@@ -152,7 +152,7 @@
 |---|---|---|
 | `(裸 M3 名)` | `east` | Material Symbols 字体 glyph |
 | `skin:` | `skin:icons/x.webp` | 皮肤包内图片（裸相对路径视为 skin: 简写） |
-| `asset:` | `asset:images/logo.webp` | App 内置 assets 资源图 |
+| `assets://` | `assets://images/logo.webp` | App 内置 assets 资源图（壳子既有协议；裸 assets/ 路径不用于皮肤语法） |
 | `file://` | `file:///storage/emulated/0/Pictures/x.png` | 本机图片（平台访问权限照常约束） |
 | `http(s)://` | `https://cdn.example.com/x.webp` | 网络图片（≤200KB、5s 超时、磁盘缓存、失败回落默认） |
 

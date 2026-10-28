@@ -737,9 +737,9 @@
       "desc": "皮肤包内图片（裸相对路径视为 skin: 简写）"
     },
     {
-      "scheme": "asset:",
-      "example": "asset:images/logo.webp",
-      "desc": "App 内置 assets 资源图"
+      "scheme": "assets://",
+      "example": "assets://images/logo.webp",
+      "desc": "App 内置 assets 资源图（壳子既有协议；裸 assets/ 路径不用于皮肤语法）"
     },
     {
       "scheme": "file://",

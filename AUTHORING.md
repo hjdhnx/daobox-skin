@@ -168,7 +168,7 @@ B 不写就保持默认。槽位由页面侧标注（常见位置类别如底栏
 |---|---|---|
 | 裸 M3 名 | `"east"` | Material Symbols 字体 glyph |
 | `skin:` | `"skin:icons/x.webp"` | 皮肤包内图片（裸相对路径 = `skin:` 简写） |
-| `asset:` | `"asset:images/logo.webp"` | App 内置资源图 |
+| `assets://` | `"assets://images/logo.webp"` | App 内置资源图（壳子既有协议；裸 `assets/...` 不用于皮肤语法） |
 | `file://` | `"file:///storage/.../x.png"` | 本机图片（≤200KB，平台访问权限照常约束） |
 | `http(s)://` | `"https://cdn.example.com/x.webp"` | 网络图片（≤200KB、5s 超时、磁盘缓存） |
 
