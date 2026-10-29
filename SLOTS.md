@@ -1,6 +1,6 @@
 # 皮肤图标槽位表
 
-> 由 DaoBox 源码机械派生（`tools/export_skin_slots.py`），**勿手改**。更新：2026-10-29 · 引擎版本 4。
+> 由 DaoBox 源码机械派生（`tools/export_skin_slots.py`），**勿手改**。更新：2026-10-30 · 引擎版本 4。
 
 图标名键（不含点号）写 iconNames 里的名字；位置槽位键（含点号）写 slots 里的 slot。值除 M3 名外可用图片 scheme（见 valueSchemes）；加载失败一律回落默认。源码约定（红线 41）：图标只允许 icon('名') 调用与 icon: '名' 数据字段两种形态，本表由两种形态机械派生，出现第三种形态导出即失败。
 
@@ -20,26 +20,28 @@
 
 ## 图标名白名单（键不含 `.`，同名全换）
 
-共 180 个在用图标（`icon(…)` 调用 + `icon: …` 数据字段两种形态合计）。值 = M3 名或下方任一图片 scheme。
+共 190 个在用图标（`icon(…)` 调用 + `icon: …` 数据字段两种形态合计）。值 = M3 名或下方任一图片 scheme。
 
 | 图标 | 出现次数 |
 |---|---|
-| `search` | 25 |
-| `chevron_right` | 14 |
-| `arrow_back` | 12 |
+| `search` | 26 |
+| `chevron_right` | 15 |
+| `arrow_back` | 14 |
 | `download` | 12 |
 | `grid_view` | 11 |
+| `close` | 11 |
 | `travel_explore` | 11 |
 | `cloud_off` | 10 |
 | `refresh` | 10 |
 | `check` | 10 |
 | `dns` | 10 |
+| `content_copy` | 10 |
+| `auto_awesome` | 9 |
 | `radar` | 9 |
 | `bolt` | 9 |
-| `auto_awesome` | 8 |
-| `close` | 8 |
-| `content_copy` | 8 |
-| `delete_outline` | 8 |
+| `delete_outline` | 9 |
+| `error_outline` | 8 |
+| `delete_sweep` | 8 |
 | `history` | 8 |
 | `extension` | 8 |
 | `movie` | 7 |
@@ -50,21 +52,19 @@
 | `music_note` | 7 |
 | `image` | 7 |
 | `repeat` | 7 |
-| `error_outline` | 7 |
 | `search_off` | 7 |
 | `edit` | 7 |
 | `link` | 7 |
 | `tune` | 7 |
 | `play_arrow` | 6 |
 | `public` | 6 |
-| `delete_sweep` | 6 |
+| `info` | 6 |
 | `more_vert` | 6 |
 | `tab` | 6 |
+| `folder_open` | 5 |
 | `folder` | 5 |
 | `add` | 5 |
 | `restart_alt` | 5 |
-| `info` | 5 |
-| `folder_open` | 4 |
 | `movie_filter` | 4 |
 | `hourglass_empty` | 4 |
 | `bookmark` | 4 |
@@ -88,6 +88,7 @@
 | `list` | 3 |
 | `code` | 3 |
 | `terminal` | 3 |
+| `data_object` | 3 |
 | `tv` | 3 |
 | `auto_stories` | 3 |
 | `check_circle` | 3 |
@@ -105,6 +106,7 @@
 | `child_care` | 2 |
 | `speed` | 2 |
 | `qr_code_2` | 2 |
+| `warning` | 2 |
 | `folder_zip` | 2 |
 | `bookmark_border` | 2 |
 | `north_east` | 2 |
@@ -138,9 +140,12 @@
 | `pause` | 1 |
 | `theaters` | 1 |
 | `list_alt` | 1 |
-| `wifi_off` | 1 |
+| `settings_outlined` | 1 |
+| `stop` | 1 |
+| `verified` | 1 |
+| `dangerous` | 1 |
+| `plagiarism` | 1 |
 | `warning_amber` | 1 |
-| `warning` | 1 |
 | `add_circle_outline` | 1 |
 | `bookmarks` | 1 |
 | `find_in_page` | 1 |
@@ -155,8 +160,14 @@
 | `link_off` | 1 |
 | `volume_up` | 1 |
 | `aspect_ratio` | 1 |
-| `playlist_add` | 1 |
+| `filter_alt_off` | 1 |
+| `note_add` | 1 |
+| `create_new_folder` | 1 |
+| `folder_off` | 1 |
+| `code_off` | 1 |
 | `menu` | 1 |
+| `save_outlined` | 1 |
+| `drive_file_rename_outline` | 1 |
 | `cloud_outlined` | 1 |
 | `timeline` | 1 |
 | `category` | 1 |
@@ -201,7 +212,6 @@
 | `select_all` | 1 |
 | `rule` | 1 |
 | `health_and_safety` | 1 |
-| `data_object` | 1 |
 | `fullscreen_exit` | 1 |
 | `open_in_new` | 1 |
 

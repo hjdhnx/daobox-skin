@@ -1,19 +1,19 @@
 {
-  "updatedAt": "2026-10-29",
+  "updatedAt": "2026-10-30",
   "engine": 4,
   "note": "图标名键（不含点号）写 iconNames 里的名字；位置槽位键（含点号）写 slots 里的 slot。值除 M3 名外可用图片 scheme（见 valueSchemes）；加载失败一律回落默认。源码约定（红线 41）：图标只允许 icon('名') 调用与 icon: '名' 数据字段两种形态，本表由两种形态机械派生，出现第三种形态导出即失败。",
   "iconNames": [
     {
       "name": "search",
-      "count": 25
+      "count": 26
     },
     {
       "name": "chevron_right",
-      "count": 14
+      "count": 15
     },
     {
       "name": "arrow_back",
-      "count": 12
+      "count": 14
     },
     {
       "name": "download",
@@ -21,6 +21,10 @@
     },
     {
       "name": "grid_view",
+      "count": 11
+    },
+    {
+      "name": "close",
       "count": 11
     },
     {
@@ -44,6 +48,14 @@
       "count": 10
     },
     {
+      "name": "content_copy",
+      "count": 10
+    },
+    {
+      "name": "auto_awesome",
+      "count": 9
+    },
+    {
       "name": "radar",
       "count": 9
     },
@@ -52,19 +64,15 @@
       "count": 9
     },
     {
-      "name": "auto_awesome",
-      "count": 8
-    },
-    {
-      "name": "close",
-      "count": 8
-    },
-    {
-      "name": "content_copy",
-      "count": 8
-    },
-    {
       "name": "delete_outline",
+      "count": 9
+    },
+    {
+      "name": "error_outline",
+      "count": 8
+    },
+    {
+      "name": "delete_sweep",
       "count": 8
     },
     {
@@ -108,10 +116,6 @@
       "count": 7
     },
     {
-      "name": "error_outline",
-      "count": 7
-    },
-    {
       "name": "search_off",
       "count": 7
     },
@@ -136,7 +140,7 @@
       "count": 6
     },
     {
-      "name": "delete_sweep",
+      "name": "info",
       "count": 6
     },
     {
@@ -146,6 +150,10 @@
     {
       "name": "tab",
       "count": 6
+    },
+    {
+      "name": "folder_open",
+      "count": 5
     },
     {
       "name": "folder",
@@ -158,14 +166,6 @@
     {
       "name": "restart_alt",
       "count": 5
-    },
-    {
-      "name": "info",
-      "count": 5
-    },
-    {
-      "name": "folder_open",
-      "count": 4
     },
     {
       "name": "movie_filter",
@@ -260,6 +260,10 @@
       "count": 3
     },
     {
+      "name": "data_object",
+      "count": 3
+    },
+    {
       "name": "tv",
       "count": 3
     },
@@ -325,6 +329,10 @@
     },
     {
       "name": "qr_code_2",
+      "count": 2
+    },
+    {
+      "name": "warning",
       "count": 2
     },
     {
@@ -460,15 +468,27 @@
       "count": 1
     },
     {
-      "name": "wifi_off",
+      "name": "settings_outlined",
+      "count": 1
+    },
+    {
+      "name": "stop",
+      "count": 1
+    },
+    {
+      "name": "verified",
+      "count": 1
+    },
+    {
+      "name": "dangerous",
+      "count": 1
+    },
+    {
+      "name": "plagiarism",
       "count": 1
     },
     {
       "name": "warning_amber",
-      "count": 1
-    },
-    {
-      "name": "warning",
       "count": 1
     },
     {
@@ -528,11 +548,35 @@
       "count": 1
     },
     {
-      "name": "playlist_add",
+      "name": "filter_alt_off",
+      "count": 1
+    },
+    {
+      "name": "note_add",
+      "count": 1
+    },
+    {
+      "name": "create_new_folder",
+      "count": 1
+    },
+    {
+      "name": "folder_off",
+      "count": 1
+    },
+    {
+      "name": "code_off",
       "count": 1
     },
     {
       "name": "menu",
+      "count": 1
+    },
+    {
+      "name": "save_outlined",
+      "count": 1
+    },
+    {
+      "name": "drive_file_rename_outline",
       "count": 1
     },
     {
@@ -709,10 +753,6 @@
     },
     {
       "name": "health_and_safety",
-      "count": 1
-    },
-    {
-      "name": "data_object",
       "count": 1
     },
     {
