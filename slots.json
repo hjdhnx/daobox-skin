@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-10-28",
+  "updatedAt": "2026-10-29",
   "engine": 4,
   "note": "图标名键（不含点号）写 iconNames 里的名字；位置槽位键（含点号）写 slots 里的 slot。值除 M3 名外可用图片 scheme（见 valueSchemes）；加载失败一律回落默认。源码约定（红线 41）：图标只允许 icon('名') 调用与 icon: '名' 数据字段两种形态，本表由两种形态机械派生，出现第三种形态导出即失败。",
   "iconNames": [
     {
       "name": "search",
-      "count": 22
+      "count": 25
     },
     {
       "name": "chevron_right",
@@ -13,10 +13,30 @@
     },
     {
       "name": "arrow_back",
-      "count": 11
+      "count": 12
+    },
+    {
+      "name": "download",
+      "count": 12
     },
     {
       "name": "grid_view",
+      "count": 11
+    },
+    {
+      "name": "travel_explore",
+      "count": 11
+    },
+    {
+      "name": "cloud_off",
+      "count": 10
+    },
+    {
+      "name": "refresh",
+      "count": 10
+    },
+    {
+      "name": "check",
       "count": 10
     },
     {
@@ -24,11 +44,7 @@
       "count": 10
     },
     {
-      "name": "download",
-      "count": 10
-    },
-    {
-      "name": "cloud_off",
+      "name": "radar",
       "count": 9
     },
     {
@@ -40,15 +56,15 @@
       "count": 8
     },
     {
-      "name": "refresh",
+      "name": "content_copy",
       "count": 8
     },
     {
-      "name": "check",
+      "name": "delete_outline",
       "count": 8
     },
     {
-      "name": "radar",
+      "name": "history",
       "count": 8
     },
     {
@@ -57,6 +73,10 @@
     },
     {
       "name": "movie",
+      "count": 7
+    },
+    {
+      "name": "live_tv",
       "count": 7
     },
     {
@@ -76,6 +96,14 @@
       "count": 7
     },
     {
+      "name": "close",
+      "count": 7
+    },
+    {
+      "name": "image",
+      "count": 7
+    },
+    {
       "name": "repeat",
       "count": 7
     },
@@ -84,23 +112,23 @@
       "count": 7
     },
     {
-      "name": "delete_outline",
+      "name": "search_off",
       "count": 7
     },
     {
-      "name": "history",
+      "name": "edit",
       "count": 7
     },
     {
-      "name": "live_tv",
-      "count": 6
+      "name": "link",
+      "count": 7
+    },
+    {
+      "name": "tune",
+      "count": 7
     },
     {
       "name": "play_arrow",
-      "count": 6
-    },
-    {
-      "name": "image",
       "count": 6
     },
     {
@@ -108,23 +136,19 @@
       "count": 6
     },
     {
-      "name": "search_off",
+      "name": "delete_sweep",
       "count": 6
     },
     {
-      "name": "link",
+      "name": "more_vert",
       "count": 6
     },
     {
-      "name": "tune",
+      "name": "tab",
       "count": 6
     },
     {
-      "name": "content_copy",
-      "count": 5
-    },
-    {
-      "name": "travel_explore",
+      "name": "folder",
       "count": 5
     },
     {
@@ -132,19 +156,15 @@
       "count": 5
     },
     {
+      "name": "info",
+      "count": 5
+    },
+    {
       "name": "folder_open",
       "count": 4
     },
     {
-      "name": "close",
-      "count": 4
-    },
-    {
       "name": "movie_filter",
-      "count": 4
-    },
-    {
-      "name": "folder",
       "count": 4
     },
     {
@@ -156,6 +176,10 @@
       "count": 4
     },
     {
+      "name": "arrow_forward",
+      "count": 4
+    },
+    {
       "name": "add",
       "count": 4
     },
@@ -164,27 +188,7 @@
       "count": 4
     },
     {
-      "name": "more_vert",
-      "count": 4
-    },
-    {
-      "name": "tv",
-      "count": 4
-    },
-    {
       "name": "workspace_premium",
-      "count": 4
-    },
-    {
-      "name": "info",
-      "count": 4
-    },
-    {
-      "name": "delete_sweep",
-      "count": 4
-    },
-    {
-      "name": "edit",
       "count": 4
     },
     {
@@ -192,15 +196,39 @@
       "count": 3
     },
     {
-      "name": "inventory_2",
-      "count": 3
-    },
-    {
       "name": "filter_alt",
       "count": 3
     },
     {
+      "name": "photo_size_select_large",
+      "count": 3
+    },
+    {
+      "name": "crop_landscape",
+      "count": 3
+    },
+    {
+      "name": "view_stream",
+      "count": 3
+    },
+    {
+      "name": "view_agenda",
+      "count": 3
+    },
+    {
+      "name": "view_column",
+      "count": 3
+    },
+    {
+      "name": "play_circle",
+      "count": 3
+    },
+    {
       "name": "subtitles",
+      "count": 3
+    },
+    {
+      "name": "share",
       "count": 3
     },
     {
@@ -209,10 +237,6 @@
     },
     {
       "name": "cleaning_services",
-      "count": 3
-    },
-    {
-      "name": "tab",
       "count": 3
     },
     {
@@ -236,7 +260,15 @@
       "count": 3
     },
     {
+      "name": "tv",
+      "count": 3
+    },
+    {
       "name": "auto_stories",
+      "count": 3
+    },
+    {
+      "name": "check_circle",
       "count": 3
     },
     {
@@ -245,6 +277,10 @@
     },
     {
       "name": "newspaper",
+      "count": 3
+    },
+    {
+      "name": "palette",
       "count": 3
     },
     {
@@ -260,6 +296,10 @@
       "count": 2
     },
     {
+      "name": "inventory_2",
+      "count": 2
+    },
+    {
       "name": "repeat_on",
       "count": 2
     },
@@ -272,35 +312,11 @@
       "count": 2
     },
     {
-      "name": "photo_size_select_large",
-      "count": 2
-    },
-    {
-      "name": "crop_landscape",
-      "count": 2
-    },
-    {
-      "name": "view_agenda",
-      "count": 2
-    },
-    {
-      "name": "view_stream",
-      "count": 2
-    },
-    {
       "name": "subject",
       "count": 2
     },
     {
-      "name": "view_column",
-      "count": 2
-    },
-    {
       "name": "child_care",
-      "count": 2
-    },
-    {
-      "name": "play_circle",
       "count": 2
     },
     {
@@ -324,7 +340,11 @@
       "count": 2
     },
     {
-      "name": "arrow_forward",
+      "name": "keyboard_arrow_down",
+      "count": 2
+    },
+    {
+      "name": "radio_button_checked",
       "count": 2
     },
     {
@@ -364,7 +384,7 @@
       "count": 2
     },
     {
-      "name": "favorite",
+      "name": "schedule",
       "count": 2
     },
     {
@@ -380,23 +400,23 @@
       "count": 2
     },
     {
-      "name": "check_circle",
-      "count": 2
-    },
-    {
       "name": "gavel",
       "count": 2
     },
     {
-      "name": "palette",
-      "count": 2
-    },
-    {
-      "name": "apps",
+      "name": "storage",
       "count": 2
     },
     {
       "name": "block",
+      "count": 2
+    },
+    {
+      "name": "data_usage",
+      "count": 2
+    },
+    {
+      "name": "logout",
       "count": 2
     },
     {
@@ -420,11 +440,11 @@
       "count": 1
     },
     {
-      "name": "pause",
+      "name": "reorder",
       "count": 1
     },
     {
-      "name": "share",
+      "name": "pause",
       "count": 1
     },
     {
@@ -445,6 +465,26 @@
     },
     {
       "name": "warning",
+      "count": 1
+    },
+    {
+      "name": "add_circle_outline",
+      "count": 1
+    },
+    {
+      "name": "bookmarks",
+      "count": 1
+    },
+    {
+      "name": "find_in_page",
+      "count": 1
+    },
+    {
+      "name": "fullscreen",
+      "count": 1
+    },
+    {
+      "name": "keyboard_arrow_up",
       "count": 1
     },
     {
@@ -492,6 +532,10 @@
       "count": 1
     },
     {
+      "name": "cloud_outlined",
+      "count": 1
+    },
+    {
       "name": "timeline",
       "count": 1
     },
@@ -501,6 +545,10 @@
     },
     {
       "name": "language",
+      "count": 1
+    },
+    {
+      "name": "favorite",
       "count": 1
     },
     {
@@ -548,6 +596,10 @@
       "count": 1
     },
     {
+      "name": "apps",
+      "count": 1
+    },
+    {
       "name": "phone_iphone",
       "count": 1
     },
@@ -572,10 +624,6 @@
       "count": 1
     },
     {
-      "name": "schedule",
-      "count": 1
-    },
-    {
       "name": "percent",
       "count": 1
     },
@@ -592,6 +640,18 @@
       "count": 1
     },
     {
+      "name": "clear_all",
+      "count": 1
+    },
+    {
+      "name": "label_outline",
+      "count": 1
+    },
+    {
+      "name": "local_fire_department",
+      "count": 1
+    },
+    {
       "name": "sports_soccer",
       "count": 1
     },
@@ -601,10 +661,6 @@
     },
     {
       "name": "network_check",
-      "count": 1
-    },
-    {
-      "name": "storage",
       "count": 1
     },
     {
@@ -624,11 +680,11 @@
       "count": 1
     },
     {
-      "name": "data_usage",
+      "name": "restore",
       "count": 1
     },
     {
-      "name": "restore",
+      "name": "library_music",
       "count": 1
     },
     {
@@ -657,6 +713,10 @@
     },
     {
       "name": "fullscreen_exit",
+      "count": 1
+    },
+    {
+      "name": "open_in_new",
       "count": 1
     }
   ],

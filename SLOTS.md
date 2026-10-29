@@ -1,6 +1,6 @@
 # 皮肤图标槽位表
 
-> 由 DaoBox 源码机械派生（`tools/export_skin_slots.py`），**勿手改**。更新：2026-10-28 · 引擎版本 4。
+> 由 DaoBox 源码机械派生（`tools/export_skin_slots.py`），**勿手改**。更新：2026-10-29 · 引擎版本 4。
 
 图标名键（不含点号）写 iconNames 里的名字；位置槽位键（含点号）写 slots 里的 slot。值除 M3 名外可用图片 scheme（见 valueSchemes）；加载失败一律回落默认。源码约定（红线 41）：图标只允许 icon('名') 调用与 icon: '名' 数据字段两种形态，本表由两种形态机械派生，出现第三种形态导出即失败。
 
@@ -20,91 +20,96 @@
 
 ## 图标名白名单（键不含 `.`，同名全换）
 
-共 164 个在用图标（`icon(…)` 调用 + `icon: …` 数据字段两种形态合计）。值 = M3 名或下方任一图片 scheme。
+共 179 个在用图标（`icon(…)` 调用 + `icon: …` 数据字段两种形态合计）。值 = M3 名或下方任一图片 scheme。
 
 | 图标 | 出现次数 |
 |---|---|
-| `search` | 22 |
+| `search` | 25 |
 | `chevron_right` | 14 |
-| `arrow_back` | 11 |
-| `grid_view` | 10 |
+| `arrow_back` | 12 |
+| `download` | 12 |
+| `grid_view` | 11 |
+| `travel_explore` | 11 |
+| `cloud_off` | 10 |
+| `refresh` | 10 |
+| `check` | 10 |
 | `dns` | 10 |
-| `download` | 10 |
-| `cloud_off` | 9 |
+| `radar` | 9 |
 | `bolt` | 9 |
 | `auto_awesome` | 8 |
-| `refresh` | 8 |
-| `check` | 8 |
-| `radar` | 8 |
+| `content_copy` | 8 |
+| `delete_outline` | 8 |
+| `history` | 8 |
 | `extension` | 8 |
 | `movie` | 7 |
+| `live_tv` | 7 |
 | `menu_book` | 7 |
 | `settings` | 7 |
 | `expand_more` | 7 |
 | `music_note` | 7 |
+| `close` | 7 |
+| `image` | 7 |
 | `repeat` | 7 |
 | `error_outline` | 7 |
-| `delete_outline` | 7 |
-| `history` | 7 |
-| `live_tv` | 6 |
+| `search_off` | 7 |
+| `edit` | 7 |
+| `link` | 7 |
+| `tune` | 7 |
 | `play_arrow` | 6 |
-| `image` | 6 |
 | `public` | 6 |
-| `search_off` | 6 |
-| `link` | 6 |
-| `tune` | 6 |
-| `content_copy` | 5 |
-| `travel_explore` | 5 |
+| `delete_sweep` | 6 |
+| `more_vert` | 6 |
+| `tab` | 6 |
+| `folder` | 5 |
 | `restart_alt` | 5 |
+| `info` | 5 |
 | `folder_open` | 4 |
-| `close` | 4 |
 | `movie_filter` | 4 |
-| `folder` | 4 |
 | `hourglass_empty` | 4 |
 | `bookmark` | 4 |
+| `arrow_forward` | 4 |
 | `add` | 4 |
 | `memory` | 4 |
-| `more_vert` | 4 |
-| `tv` | 4 |
 | `workspace_premium` | 4 |
-| `info` | 4 |
-| `delete_sweep` | 4 |
-| `edit` | 4 |
 | `sort` | 3 |
-| `inventory_2` | 3 |
 | `filter_alt` | 3 |
+| `photo_size_select_large` | 3 |
+| `crop_landscape` | 3 |
+| `view_stream` | 3 |
+| `view_agenda` | 3 |
+| `view_column` | 3 |
+| `play_circle` | 3 |
 | `subtitles` | 3 |
+| `share` | 3 |
 | `bug_report` | 3 |
 | `cleaning_services` | 3 |
-| `tab` | 3 |
 | `cast` | 3 |
 | `description` | 3 |
 | `list` | 3 |
 | `code` | 3 |
 | `terminal` | 3 |
+| `tv` | 3 |
 | `auto_stories` | 3 |
+| `check_circle` | 3 |
 | `shield` | 3 |
 | `newspaper` | 3 |
+| `palette` | 3 |
 | `science` | 2 |
 | `more_horiz` | 2 |
 | `arrow_upward` | 2 |
+| `inventory_2` | 2 |
 | `repeat_on` | 2 |
 | `repeat_one` | 2 |
 | `lock_outline` | 2 |
-| `photo_size_select_large` | 2 |
-| `crop_landscape` | 2 |
-| `view_agenda` | 2 |
-| `view_stream` | 2 |
 | `subject` | 2 |
-| `view_column` | 2 |
 | `child_care` | 2 |
-| `play_circle` | 2 |
 | `speed` | 2 |
 | `qr_code_2` | 2 |
 | `folder_zip` | 2 |
 | `bookmark_border` | 2 |
 | `north_east` | 2 |
-| `arrow_forward` | 2 |
+| `keyboard_arrow_down` | 2 |
+| `radio_button_checked` | 2 |
 | `swap_horiz` | 2 |
 | `playlist_remove` | 2 |
 | `fast_forward` | 2 |
@@ -114,27 +119,32 @@
 | `bedtime` | 2 |
 | `flip` | 2 |
 | `star` | 2 |
-| `favorite` | 2 |
+| `schedule` | 2 |
 | `tag` | 2 |
 | `verified_user` | 2 |
 | `favorite_border` | 2 |
-| `check_circle` | 2 |
 | `gavel` | 2 |
-| `palette` | 2 |
-| `apps` | 2 |
+| `storage` | 2 |
 | `block` | 2 |
+| `data_usage` | 2 |
+| `logout` | 2 |
 | `home` | 1 |
 | `person` | 1 |
 | `swap_vert` | 1 |
 | `view_list` | 1 |
 | `photo_library` | 1 |
+| `reorder` | 1 |
 | `pause` | 1 |
-| `share` | 1 |
 | `theaters` | 1 |
 | `list_alt` | 1 |
 | `wifi_off` | 1 |
 | `warning_amber` | 1 |
 | `warning` | 1 |
+| `add_circle_outline` | 1 |
+| `bookmarks` | 1 |
+| `find_in_page` | 1 |
+| `fullscreen` | 1 |
+| `keyboard_arrow_up` | 1 |
 | `cast_connected` | 1 |
 | `alt_route` | 1 |
 | `checklist` | 1 |
@@ -146,9 +156,11 @@
 | `aspect_ratio` | 1 |
 | `playlist_add` | 1 |
 | `menu` | 1 |
+| `cloud_outlined` | 1 |
 | `timeline` | 1 |
 | `category` | 1 |
 | `language` | 1 |
+| `favorite` | 1 |
 | `cloud_upload` | 1 |
 | `push_pin` | 1 |
 | `lock` | 1 |
@@ -160,27 +172,29 @@
 | `info_outline` | 1 |
 | `shopping_cart` | 1 |
 | `cloud_sync` | 1 |
+| `apps` | 1 |
 | `phone_iphone` | 1 |
 | `content_paste_go` | 1 |
 | `crop` | 1 |
 | `download_for_offline` | 1 |
 | `save_alt` | 1 |
 | `format_bold` | 1 |
-| `schedule` | 1 |
 | `percent` | 1 |
 | `battery_full` | 1 |
 | `lightbulb` | 1 |
 | `vertical_align_bottom` | 1 |
+| `clear_all` | 1 |
+| `label_outline` | 1 |
+| `local_fire_department` | 1 |
 | `sports_soccer` | 1 |
 | `animation` | 1 |
 | `network_check` | 1 |
-| `storage` | 1 |
 | `send` | 1 |
 | `dashboard_customize` | 1 |
 | `verified_user_outlined` | 1 |
 | `playlist_add_check` | 1 |
-| `data_usage` | 1 |
 | `restore` | 1 |
+| `library_music` | 1 |
 | `upload_file` | 1 |
 | `pie_chart` | 1 |
 | `select_all` | 1 |
@@ -188,6 +202,7 @@
 | `health_and_safety` | 1 |
 | `data_object` | 1 |
 | `fullscreen_exit` | 1 |
+| `open_in_new` | 1 |
 
 ## 图片取值 scheme
 
