@@ -56,6 +56,10 @@
       "count": 8
     },
     {
+      "name": "close",
+      "count": 8
+    },
+    {
       "name": "content_copy",
       "count": 8
     },
@@ -93,10 +97,6 @@
     },
     {
       "name": "music_note",
-      "count": 7
-    },
-    {
-      "name": "close",
       "count": 7
     },
     {
@@ -152,6 +152,10 @@
       "count": 5
     },
     {
+      "name": "add",
+      "count": 5
+    },
+    {
       "name": "restart_alt",
       "count": 5
     },
@@ -177,10 +181,6 @@
     },
     {
       "name": "arrow_forward",
-      "count": 4
-    },
-    {
-      "name": "add",
       "count": 4
     },
     {
@@ -392,6 +392,10 @@
       "count": 2
     },
     {
+      "name": "lock",
+      "count": 2
+    },
+    {
       "name": "verified_user",
       "count": 2
     },
@@ -560,10 +564,6 @@
       "count": 1
     },
     {
-      "name": "lock",
-      "count": 1
-    },
-    {
       "name": "folder_special",
       "count": 1
     },
@@ -661,6 +661,10 @@
     },
     {
       "name": "network_check",
+      "count": 1
+    },
+    {
+      "name": "storefront",
       "count": 1
     },
     {

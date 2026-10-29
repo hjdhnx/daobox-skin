@@ -20,7 +20,7 @@
 
 ## 图标名白名单（键不含 `.`，同名全换）
 
-共 179 个在用图标（`icon(…)` 调用 + `icon: …` 数据字段两种形态合计）。值 = M3 名或下方任一图片 scheme。
+共 180 个在用图标（`icon(…)` 调用 + `icon: …` 数据字段两种形态合计）。值 = M3 名或下方任一图片 scheme。
 
 | 图标 | 出现次数 |
 |---|---|
@@ -37,6 +37,7 @@
 | `radar` | 9 |
 | `bolt` | 9 |
 | `auto_awesome` | 8 |
+| `close` | 8 |
 | `content_copy` | 8 |
 | `delete_outline` | 8 |
 | `history` | 8 |
@@ -47,7 +48,6 @@
 | `settings` | 7 |
 | `expand_more` | 7 |
 | `music_note` | 7 |
-| `close` | 7 |
 | `image` | 7 |
 | `repeat` | 7 |
 | `error_outline` | 7 |
@@ -61,6 +61,7 @@
 | `more_vert` | 6 |
 | `tab` | 6 |
 | `folder` | 5 |
+| `add` | 5 |
 | `restart_alt` | 5 |
 | `info` | 5 |
 | `folder_open` | 4 |
@@ -68,7 +69,6 @@
 | `hourglass_empty` | 4 |
 | `bookmark` | 4 |
 | `arrow_forward` | 4 |
-| `add` | 4 |
 | `memory` | 4 |
 | `workspace_premium` | 4 |
 | `sort` | 3 |
@@ -121,6 +121,7 @@
 | `star` | 2 |
 | `schedule` | 2 |
 | `tag` | 2 |
+| `lock` | 2 |
 | `verified_user` | 2 |
 | `favorite_border` | 2 |
 | `gavel` | 2 |
@@ -163,7 +164,6 @@
 | `favorite` | 1 |
 | `cloud_upload` | 1 |
 | `push_pin` | 1 |
-| `lock` | 1 |
 | `folder_special` | 1 |
 | `skip_previous` | 1 |
 | `skip_next` | 1 |
@@ -189,6 +189,7 @@
 | `sports_soccer` | 1 |
 | `animation` | 1 |
 | `network_check` | 1 |
+| `storefront` | 1 |
 | `send` | 1 |
 | `dashboard_customize` | 1 |
 | `verified_user_outlined` | 1 |
