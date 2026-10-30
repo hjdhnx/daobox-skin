@@ -132,7 +132,10 @@ my-skin.dsz
 }
 ```
 
-- 可渐变的面：`primary`（主按钮/强调面）、`card`、`banner`、`navBar`、`chipOn`（选中态标签）；
+- 可渐变的面（**这五个是当前引擎真正会渲染的落点**，写别的键不生效）：
+  `primary` = 主按钮/空态 CTA；`card` = 卡片；`banner` = 首页轮播与浏览器起始页头图；
+  `navBar` = 底部导航（铺渐变时引擎会自动把图标/文字换成高对比白色）；
+  `chipOn` = 分段控件与筛选的选中态；
 - `stops` 2–4 个 hex，`angle` 0–360，`type` 目前仅 `linear`；
 - 校验：`onPrimary`/`onSurface` 必须对 **最亮和最暗两个 stop** 都达到 AA 对比度——给 AI 的需求里直接说「渐变要保证白字可读」，它懂。
 

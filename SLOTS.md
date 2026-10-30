@@ -8,6 +8,7 @@
 
 | 槽位 | 默认图标 | 说明 |
 |---|---|---|
+| `banner` | `—` | 页面显式标注（components/hero_carousel.js） |
 | `tab.agent` | `auto_awesome` | 底栏「AI」tab（TABS 派生） |
 | `tab.home` | `home` | 底栏「首页」tab（TABS 派生） |
 | `tab.lab` | `science` | 底栏「实验室」tab（TABS 派生） |
@@ -25,24 +26,24 @@
 | 图标 | 出现次数 |
 |---|---|
 | `search` | 26 |
-| `chevron_right` | 15 |
+| `chevron_right` | 16 |
 | `arrow_back` | 14 |
+| `close` | 13 |
 | `grid_view` | 11 |
-| `close` | 11 |
+| `check` | 11 |
 | `content_copy` | 11 |
 | `download` | 11 |
 | `cloud_off` | 10 |
 | `refresh` | 10 |
-| `check` | 10 |
 | `dns` | 10 |
+| `bolt` | 10 |
 | `delete_outline` | 10 |
-| `travel_explore` | 10 |
 | `auto_awesome` | 9 |
 | `radar` | 9 |
-| `bolt` | 9 |
 | `error_outline` | 8 |
 | `delete_sweep` | 8 |
 | `history` | 8 |
+| `travel_explore` | 8 |
 | `extension` | 8 |
 | `movie` | 7 |
 | `live_tv` | 7 |
@@ -65,6 +66,7 @@
 | `folder` | 5 |
 | `add` | 5 |
 | `restart_alt` | 5 |
+| `palette` | 5 |
 | `movie_filter` | 4 |
 | `hourglass_empty` | 4 |
 | `bookmark` | 4 |
@@ -94,7 +96,6 @@
 | `check_circle` | 3 |
 | `shield` | 3 |
 | `newspaper` | 3 |
-| `palette` | 3 |
 | `science` | 2 |
 | `more_horiz` | 2 |
 | `arrow_upward` | 2 |
@@ -140,6 +141,7 @@
 | `pause` | 1 |
 | `theaters` | 1 |
 | `list_alt` | 1 |
+| `touch_app` | 1 |
 | `settings_outlined` | 1 |
 | `stop` | 1 |
 | `verified` | 1 |
@@ -201,7 +203,6 @@
 | `sports_soccer` | 1 |
 | `animation` | 1 |
 | `network_check` | 1 |
-| `storefront` | 1 |
 | `send` | 1 |
 | `dashboard_customize` | 1 |
 | `verified_user_outlined` | 1 |

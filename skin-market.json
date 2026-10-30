@@ -1,24 +1,24 @@
 {
   "name": "DaBox 官方皮肤市场",
   "desc": "官方维护的皮肤分发索引",
-  "updatedAt": "2026-10-28",
+  "updatedAt": "2026-10-30",
   "skins": [
     {
       "id": "dao.skin.aurora-glass",
       "name": "极光玻璃",
       "author": "DaoBox 官方",
       "desc": "玻璃材质卡片 + 悬浮胶囊底栏，冷色中性偏移",
-      "version": "1.0.0",
-      "url": "skins/dao.skin.aurora-glass-1.0.0.dsz",
-      "size": 535,
-      "md5": "9a1e920efa8bb12a39fa6726e2b6125b",
+      "version": "1.1.0",
+      "url": "skins/dao.skin.aurora-glass-1.1.0.dsz",
+      "size": 605,
+      "md5": "e0292a3c4b3df3f5772670d303639526",
       "minEngine": 4,
       "pro": true,
       "tags": [
         "玻璃",
         "悬浮底栏"
       ],
-      "changelog": "首发",
+      "changelog": "底栏/选中态接极光渐变",
       "preview": "previews/aurora-glass.webp"
     },
     {
@@ -29,7 +29,7 @@
       "version": "1.0.0",
       "url": "skins/dao.skin.ink-stone-1.0.0.dsz",
       "size": 468,
-      "md5": "6a026623e1cb43e979afa5395b4e2c65",
+      "md5": "e3231df0904e29124d10b9b25d82d15b",
       "minEngine": 4,
       "pro": false,
       "tags": [
@@ -44,35 +44,35 @@
       "name": "奶油果冻",
       "author": "DaoBox 官方",
       "desc": "大圆角 · 奶油渐变卡 · M3 Expressive 弹簧动效",
-      "version": "1.0.0",
-      "url": "skins/dao.skin.cream-jelly-1.0.0.dsz",
-      "size": 502,
-      "md5": "97e50865527cf1f91374cd4ed3a6546a",
+      "version": "1.1.0",
+      "url": "skins/dao.skin.cream-jelly-1.1.0.dsz",
+      "size": 546,
+      "md5": "eaab706b20747ccf6a8c836458a926e9",
       "minEngine": 4,
       "pro": true,
       "tags": [
         "渐变",
         "大圆角"
       ],
-      "changelog": "首发",
+      "changelog": "主按钮/选中态接奶油渐变",
       "preview": "previews/cream-jelly.webp"
     },
     {
       "id": "dao.skin.neon-mech",
       "name": "霓虹机甲",
       "author": "DaoBox 官方",
-      "desc": "全局扁平卡片，仅推荐横幅独立霓虹渐变（组件槽位演示）",
-      "version": "1.0.0",
-      "url": "skins/dao.skin.neon-mech-1.0.0.dsz",
-      "size": 546,
-      "md5": "3d5ac80258ae79ba326fe6707eb8630b",
+      "desc": "全局扁平卡片 + 横幅/底栏/主按钮霓虹渐变",
+      "version": "1.1.0",
+      "url": "skins/dao.skin.neon-mech-1.1.0.dsz",
+      "size": 623,
+      "md5": "2f470a6b209059cb9428095799cfa61b",
       "minEngine": 4,
       "pro": true,
       "tags": [
         "组件槽位",
         "深色"
       ],
-      "changelog": "首发",
+      "changelog": "底栏/主按钮/选中态接霓虹渐变",
       "preview": "previews/neon-mech.webp"
     },
     {
@@ -83,7 +83,7 @@
       "version": "1.0.0",
       "url": "skins/dao.skin.moss-1.0.0.dsz",
       "size": 418,
-      "md5": "3da6ec3d8e3e741bcbd0b1a07271a6b1",
+      "md5": "4460a7ef1ba859f23c149a8a7f49335c",
       "minEngine": 4,
       "pro": false,
       "tags": [
@@ -101,7 +101,7 @@
       "version": "1.0.0",
       "url": "skins/dao.skin.nightscape-1.0.0.dsz",
       "size": 444,
-      "md5": "9df42c3ce2bf8f1581902f5313d9e579",
+      "md5": "28f43622ab20f3ece84a0d94d0ef9427",
       "minEngine": 4,
       "pro": false,
       "tags": [

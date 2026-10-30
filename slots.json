@@ -9,18 +9,22 @@
     },
     {
       "name": "chevron_right",
-      "count": 15
+      "count": 16
     },
     {
       "name": "arrow_back",
       "count": 14
     },
     {
+      "name": "close",
+      "count": 13
+    },
+    {
       "name": "grid_view",
       "count": 11
     },
     {
-      "name": "close",
+      "name": "check",
       "count": 11
     },
     {
@@ -40,19 +44,15 @@
       "count": 10
     },
     {
-      "name": "check",
-      "count": 10
-    },
-    {
       "name": "dns",
       "count": 10
     },
     {
-      "name": "delete_outline",
+      "name": "bolt",
       "count": 10
     },
     {
-      "name": "travel_explore",
+      "name": "delete_outline",
       "count": 10
     },
     {
@@ -61,10 +61,6 @@
     },
     {
       "name": "radar",
-      "count": 9
-    },
-    {
-      "name": "bolt",
       "count": 9
     },
     {
@@ -77,6 +73,10 @@
     },
     {
       "name": "history",
+      "count": 8
+    },
+    {
+      "name": "travel_explore",
       "count": 8
     },
     {
@@ -165,6 +165,10 @@
     },
     {
       "name": "restart_alt",
+      "count": 5
+    },
+    {
+      "name": "palette",
       "count": 5
     },
     {
@@ -281,10 +285,6 @@
     },
     {
       "name": "newspaper",
-      "count": 3
-    },
-    {
-      "name": "palette",
       "count": 3
     },
     {
@@ -465,6 +465,10 @@
     },
     {
       "name": "list_alt",
+      "count": 1
+    },
+    {
+      "name": "touch_app",
       "count": 1
     },
     {
@@ -712,10 +716,6 @@
       "count": 1
     },
     {
-      "name": "storefront",
-      "count": 1
-    },
-    {
       "name": "send",
       "count": 1
     },
@@ -769,6 +769,11 @@
     }
   ],
   "slots": [
+    {
+      "slot": "banner",
+      "default": "",
+      "desc": "页面显式标注（components/hero_carousel.js）"
+    },
     {
       "slot": "tab.agent",
       "default": "auto_awesome",
