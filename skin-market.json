@@ -7,108 +7,113 @@
       "id": "dao.skin.aurora-glass",
       "name": "极光玻璃",
       "author": "DaoBox 官方",
-      "desc": "玻璃材质卡片 + 悬浮胶囊底栏，冷色中性偏移",
-      "version": "1.1.0",
-      "url": "skins/dao.skin.aurora-glass-1.1.0.dsz",
-      "size": 605,
-      "md5": "e0292a3c4b3df3f5772670d303639526",
+      "desc": "冷蓝玻璃 + 悬浮胶囊底栏：卡片半透明描边，横幅/底栏/选中态极光渐变",
+      "version": "1.2.0",
+      "url": "skins/dao.skin.aurora-glass-1.2.0.dsz",
+      "size": 709,
+      "md5": "c000db5360196cc7e7123b66b1b00d0a",
       "minEngine": 4,
       "pro": true,
       "tags": [
         "玻璃",
-        "悬浮底栏"
+        "悬浮底栏",
+        "渐变"
       ],
-      "changelog": "底栏/选中态接极光渐变",
+      "changelog": "补齐横幅/主按钮渐变与列表槽位",
       "preview": "previews/aurora-glass.webp"
     },
     {
-      "id": "dao.skin.ink-stone",
+      "id": "dao.skin.ink-slab",
       "name": "墨石直角",
       "author": "DaoBox 官方",
-      "desc": "纸墨高对比 · 直角描边卡片 · 衬线标题气质",
-      "version": "1.0.0",
-      "url": "skins/dao.skin.ink-stone-1.0.0.dsz",
-      "size": 468,
-      "md5": "e3231df0904e29124d10b9b25d82d15b",
+      "desc": "纸墨编辑风：全直角描边卡 + 墨色横幅，克制的单色体系",
+      "version": "1.1.0",
+      "url": "skins/dao.skin.ink-slab-1.1.0.dsz",
+      "size": 646,
+      "md5": "56f4cc517f41ee5aae6acf09364f8701",
       "minEngine": 4,
       "pro": false,
       "tags": [
         "直角",
+        "描边",
         "高对比"
       ],
-      "changelog": "首发",
-      "preview": "previews/ink-stone.webp"
+      "changelog": "补齐横幅/选中态墨色渐变"
     },
     {
       "id": "dao.skin.cream-jelly",
       "name": "奶油果冻",
       "author": "DaoBox 官方",
-      "desc": "大圆角 · 奶油渐变卡 · M3 Expressive 弹簧动效",
-      "version": "1.1.0",
-      "url": "skins/dao.skin.cream-jelly-1.1.0.dsz",
-      "size": 546,
-      "md5": "eaab706b20747ccf6a8c836458a926e9",
+      "desc": "大圆角奶油渐变：卡片/主按钮/底栏/选中态全套奶油色，Expressive 弹性",
+      "version": "1.2.0",
+      "url": "skins/dao.skin.cream-jelly-1.2.0.dsz",
+      "size": 683,
+      "md5": "1d88ccd34c0ef4ff455d956398eab159",
       "minEngine": 4,
       "pro": true,
       "tags": [
         "渐变",
-        "大圆角"
+        "大圆角",
+        "暖色"
       ],
-      "changelog": "主按钮/选中态接奶油渐变",
+      "changelog": "补齐横幅/底栏渐变与列表槽位",
       "preview": "previews/cream-jelly.webp"
     },
     {
       "id": "dao.skin.neon-mech",
       "name": "霓虹机甲",
       "author": "DaoBox 官方",
-      "desc": "全局扁平卡片 + 横幅/底栏/主按钮霓虹渐变",
-      "version": "1.1.0",
-      "url": "skins/dao.skin.neon-mech-1.1.0.dsz",
-      "size": 623,
-      "md5": "2f470a6b209059cb9428095799cfa61b",
+      "desc": "全局扁平卡 + 横幅/底栏/主按钮/选中态霓虹渐变（青→紫）",
+      "version": "1.2.0",
+      "url": "skins/dao.skin.neon-mech-1.2.0.dsz",
+      "size": 649,
+      "md5": "94c609f12d2380f15a485a3f6be2d97a",
       "minEngine": 4,
       "pro": true,
       "tags": [
         "组件槽位",
+        "霓虹",
         "深色"
       ],
-      "changelog": "底栏/主按钮/选中态接霓虹渐变",
+      "changelog": "补齐列表槽位与横幅描边",
       "preview": "previews/neon-mech.webp"
     },
     {
       "id": "dao.skin.moss",
       "name": "苔原绿",
       "author": "DaoBox 官方",
-      "desc": "低饱和苔绿 · 圆润悬浮底栏（仅亮色域）",
-      "version": "1.0.0",
-      "url": "skins/dao.skin.moss-1.0.0.dsz",
-      "size": 418,
-      "md5": "4460a7ef1ba859f23c149a8a7f49335c",
+      "desc": "低饱和苔绿 · 圆润悬浮底栏，森系渐变横幅（仅亮色域）",
+      "version": "1.1.0",
+      "url": "skins/dao.skin.moss-1.1.0.dsz",
+      "size": 560,
+      "md5": "ce1cb0b4bf2fe858d827a47ed1fc41c3",
       "minEngine": 4,
       "pro": false,
       "tags": [
         "自然",
-        "单域"
+        "单域",
+        "渐变"
       ],
-      "changelog": "首发",
+      "changelog": "补齐横幅/底栏/主按钮渐变",
       "preview": "previews/moss.webp"
     },
     {
       "id": "dao.skin.nightscape",
       "name": "暗夜紫",
       "author": "DaoBox 官方",
-      "desc": "深紫玻璃 · 贴底通栏（仅暗色域）",
-      "version": "1.0.0",
-      "url": "skins/dao.skin.nightscape-1.0.0.dsz",
-      "size": 444,
-      "md5": "28f43622ab20f3ece84a0d94d0ef9427",
+      "desc": "深紫玻璃 · 贴底通栏，暗色域霓虹紫渐变（仅暗色域）",
+      "version": "1.1.0",
+      "url": "skins/dao.skin.nightscape-1.1.0.dsz",
+      "size": 633,
+      "md5": "e525fbaaf185651aae62e95ea705fbb3",
       "minEngine": 4,
       "pro": false,
       "tags": [
         "深色",
-        "玻璃"
+        "玻璃",
+        "渐变"
       ],
-      "changelog": "首发",
+      "changelog": "补齐横幅/底栏/主按钮渐变",
       "preview": "previews/nightscape.webp"
     }
   ]
