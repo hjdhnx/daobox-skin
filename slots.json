@@ -16,10 +16,6 @@
       "count": 14
     },
     {
-      "name": "download",
-      "count": 12
-    },
-    {
       "name": "grid_view",
       "count": 11
     },
@@ -28,7 +24,11 @@
       "count": 11
     },
     {
-      "name": "travel_explore",
+      "name": "content_copy",
+      "count": 11
+    },
+    {
+      "name": "download",
       "count": 11
     },
     {
@@ -48,7 +48,11 @@
       "count": 10
     },
     {
-      "name": "content_copy",
+      "name": "delete_outline",
+      "count": 10
+    },
+    {
+      "name": "travel_explore",
       "count": 10
     },
     {
@@ -61,10 +65,6 @@
     },
     {
       "name": "bolt",
-      "count": 9
-    },
-    {
-      "name": "delete_outline",
       "count": 9
     },
     {
@@ -509,6 +509,10 @@
     },
     {
       "name": "keyboard_arrow_up",
+      "count": 1
+    },
+    {
+      "name": "tab_unselected",
       "count": 1
     },
     {

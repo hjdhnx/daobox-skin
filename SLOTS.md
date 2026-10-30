@@ -20,26 +20,26 @@
 
 ## 图标名白名单（键不含 `.`，同名全换）
 
-共 190 个在用图标（`icon(…)` 调用 + `icon: …` 数据字段两种形态合计）。值 = M3 名或下方任一图片 scheme。
+共 191 个在用图标（`icon(…)` 调用 + `icon: …` 数据字段两种形态合计）。值 = M3 名或下方任一图片 scheme。
 
 | 图标 | 出现次数 |
 |---|---|
 | `search` | 26 |
 | `chevron_right` | 15 |
 | `arrow_back` | 14 |
-| `download` | 12 |
 | `grid_view` | 11 |
 | `close` | 11 |
-| `travel_explore` | 11 |
+| `content_copy` | 11 |
+| `download` | 11 |
 | `cloud_off` | 10 |
 | `refresh` | 10 |
 | `check` | 10 |
 | `dns` | 10 |
-| `content_copy` | 10 |
+| `delete_outline` | 10 |
+| `travel_explore` | 10 |
 | `auto_awesome` | 9 |
 | `radar` | 9 |
 | `bolt` | 9 |
-| `delete_outline` | 9 |
 | `error_outline` | 8 |
 | `delete_sweep` | 8 |
 | `history` | 8 |
@@ -151,6 +151,7 @@
 | `find_in_page` | 1 |
 | `fullscreen` | 1 |
 | `keyboard_arrow_up` | 1 |
+| `tab_unselected` | 1 |
 | `cast_connected` | 1 |
 | `alt_route` | 1 |
 | `checklist` | 1 |
